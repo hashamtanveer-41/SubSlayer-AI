@@ -15,10 +15,10 @@ export default function App() {
   const [page, setPage] = useState<Page>(initialPage)
   const [name, setName] = useState(() => readStored("subslayer-name", "Alex"))
   const [subscriptions, setSubscriptions] = useState<Subscription[]>(() =>
-    readStored("subslayer-subscriptions", seedSubscriptions),
+    readStored("subslayer-subscriptions-v2", seedSubscriptions),
   )
   const [virtualCards, setVirtualCards] = useState<VirtualCard[]>(() =>
-    readStored("subslayer-cards", seedVirtualCards),
+    readStored("subslayer-cards-v2", seedVirtualCards),
   )
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem(
-        "subslayer-subscriptions",
+        "subslayer-subscriptions-v2",
         JSON.stringify(subscriptions),
       )
     } catch {
@@ -40,7 +40,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem("subslayer-cards", JSON.stringify(virtualCards))
+      localStorage.setItem("subslayer-cards-v2", JSON.stringify(virtualCards))
     } catch {
       /* Safe fallback */
     }

@@ -2,13 +2,15 @@ import { ArrowUpRight, ChevronDown, Sparkles } from "lucide-react"
 import { seedSubscriptions } from "../../data/seedData"
 import { money } from "../../utils/formatters"
 import { ProviderIcon } from "../common/ProviderIcon"
+import { SubSlayerLogo } from "../common/SubSlayerLogo"
 
 export function MiniDashboard() {
   return (
     <div className="mini-dashboard">
       <div className="mini-header">
-        <span className="mini-logo">
-          <span className="mini-logo-symbol">⚡</span> SubSlayer overview
+        <span className="mini-logo" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <SubSlayerLogo size={20} />
+          <span style={{ fontWeight: 700, letterSpacing: "-0.3px" }}>SubSlayer Overview</span>
         </span>
         <span className="mini-date">
           June 2026 <ChevronDown size={12} />

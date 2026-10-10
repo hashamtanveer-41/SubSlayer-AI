@@ -23,8 +23,8 @@ export function LandingHero({ navigate }: LandingHeroProps) {
           Your money.
           <br />
           <span>Slayed on command.</span>
-          <span className="hero-asterisk" aria-hidden="true">
-            ⚡
+          <span className="hero-asterisk" aria-hidden="true" style={{ color: "var(--accent)", fontSize: "40px" }}>
+            *
           </span>
         </h1>
         <p>

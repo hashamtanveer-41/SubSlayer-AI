@@ -1,5 +1,6 @@
 import { ArrowUpRight, ShieldCheck, Zap } from "lucide-react"
 import type { Page } from "../../types"
+import { SubSlayerLogo } from "../common/SubSlayerLogo"
 import { Button } from "../ui/Button"
 
 export interface FeatureStatementProps {
@@ -9,8 +10,8 @@ export interface FeatureStatementProps {
 export function FeatureStatement({ navigate }: FeatureStatementProps) {
   return (
     <section className="statement-section" id="features">
-      <div className="statement-art">
-        <div className="big-loop" style={{ fontSize: "240px" }}>⚡</div>
+      <div className="statement-art" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
+        <SubSlayerLogo size={180} glow />
         <span className="art-note">
           Keep your money
           <br />
