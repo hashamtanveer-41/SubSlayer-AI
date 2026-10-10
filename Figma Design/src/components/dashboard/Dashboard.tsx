@@ -1,5 +1,10 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Plus } from "lucide-react"
+import {
+  getSubscriptionsApi,
+  getVirtualCards,
+  toggleCardLockApi,
+} from "../../services/api"
 import type { DashboardSection, Subscription, VirtualCard } from "../../types"
 import { monthly } from "../../utils/formatters"
 import { AgentExecutionModal } from "../agent/AgentExecutionModal"
@@ -46,6 +51,27 @@ export function Dashboard({
   const [notice, setNotice] = useState("")
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [renewalsOpen, setRenewalsOpen] = useState(false)
+
+  // Sync with live FastAPI backend on initial mount
+  useEffect(() => {
+    async function syncBackendData() {
+      try {
+        const [liveCards, liveSubs] = await Promise.allSettled([
+          getVirtualCards(),
+          getSubscriptionsApi(),
+        ])
+        if (liveCards.status === "fulfilled" && liveCards.value.length > 0) {
+          setVirtualCards(liveCards.value)
+        }
+        if (liveSubs.status === "fulfilled" && liveSubs.value.length > 0) {
+          setSubscriptions(liveSubs.value)
+        }
+      } catch (e) {
+        console.warn("Backend sync fallback to local store:", e)
+      }
+    }
+    syncBackendData()
+  }, [])
 
   // Computed metrics
   const active = subscriptions.filter((s) => s.status === "Active")
@@ -104,23 +130,37 @@ export function Dashboard({
     setNotice(`Restored ${sub.name} to active monitoring.`)
   }
 
-  function handleToggleCardLock(cardId: string) {
+  async function handleToggleCardLock(cardId: string) {
+    const target = virtualCards.find((c) => c.id === cardId)
+    const newLocked = !(target?.balanceLocked ?? target?.demoPolicyLocked ?? target?.status === "locked")
+
+    // Optimistic UI update
     setVirtualCards(
       virtualCards.map((c) =>
         c.id === cardId
           ? {
               ...c,
-              balanceLocked: !c.balanceLocked,
-              status: !c.balanceLocked ? "Locked" : "Active",
+              balanceLocked: newLocked,
+              demoPolicyLocked: newLocked,
+              status: newLocked ? "locked" : "active",
             }
           : c,
       ),
     )
-    const target = virtualCards.find((c) => c.id === cardId)
+
+    try {
+      const updated = await toggleCardLockApi(cardId, newLocked)
+      setVirtualCards((prev) =>
+        prev.map((c) => (c.id === cardId ? updated : c)),
+      )
+    } catch {
+      // Local fallback
+    }
+
     setNotice(
-      target?.balanceLocked
-        ? `Unlocked virtual card for ${target.merchant}.`
-        : `Card balance locked to $0.00! Real bank account shielded.`,
+      newLocked
+        ? `Card balance locked to $0.00! Stripe payment shield active.`
+        : `Unlocked virtual card for ${target?.merchant || target?.label || "Service"}.`,
     )
   }
 
