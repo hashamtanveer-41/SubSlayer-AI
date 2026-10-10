@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   LogOut,
   Shield,
-  SlidersHorizontal,
   Sparkles,
 } from "lucide-react"
 import type { DashboardSection } from "../../types"
@@ -20,7 +19,7 @@ export interface SidebarProps {
   sidebarOpen: boolean
   setSidebarOpen: (open: boolean) => void
   activeCount: number
-  onOpenSettings: () => void
+  backendReady: boolean
   onOpenHelp: () => void
   logout: () => void
 }
@@ -32,7 +31,7 @@ export function Sidebar({
   sidebarOpen,
   setSidebarOpen,
   activeCount,
-  onOpenSettings,
+  backendReady,
   onOpenHelp,
   logout,
 }: SidebarProps) {
@@ -93,7 +92,7 @@ export function Sidebar({
           <span className="agent-symbol">
             <Sparkles size={20} />
           </span>
-          <strong>Demo Provider APIs Ready.</strong>
+          <strong>{backendReady ? "Demo Gateway Connected" : "Demo Gateway Offline"}</strong>
           <p>Request cancellation through Netflix, Spotify, Canva, or Adobe demo services.</p>
           <Button
             variant="secondary"
@@ -106,10 +105,6 @@ export function Sidebar({
           </Button>
         </div>
         <div className="sidebar-bottom">
-          <Button variant="ghost" onClick={onOpenSettings}>
-            <SlidersHorizontal size={18} />
-            Preferences
-          </Button>
           <Button variant="ghost" onClick={onOpenHelp}>
             <CircleHelp size={18} />
             How Agent Works
@@ -120,9 +115,9 @@ export function Sidebar({
             </span>
             <div>
               <strong>{name}</strong>
-              <span>Demo Account</span>
+              <span>Shared demo workspace</span>
             </div>
-            <Button variant="ghost" aria-label="Log out" onClick={logout}>
+            <Button variant="ghost" aria-label="Back to home" onClick={logout}>
               <LogOut size={17} />
             </Button>
           </div>

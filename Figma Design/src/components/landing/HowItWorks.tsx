@@ -1,8 +1,13 @@
 import { ArrowUpRight, Check, CircleHelp, Plus, SlidersHorizontal, Sparkles, Wallet } from "lucide-react"
-import { seedSubscriptions } from "../../data/seedData"
+import type { DemoOverview } from "../../hooks/useDemoOverview"
+import { monthly, money } from "../../utils/formatters"
 import { ProviderIcon } from "../common/ProviderIcon"
 
-export function HowItWorks() {
+export function HowItWorks({ overview }: { overview: DemoOverview }) {
+  const active = overview.subscriptions.filter((sub) => sub.status === "Active")
+  const supported = active.filter((sub) => ["netflix", "spotify", "canva", "adobe"].includes(sub.provider || ""))
+  const potential = supported.reduce((total, sub) => total + monthly(sub) * 12, 0)
+  const requested = overview.subscriptions.filter((sub) => sub.status !== "Active")
   return (
     <section className="how-section" id="how-it-works">
       <div className="section-heading">
@@ -28,11 +33,11 @@ export function HowItWorks() {
           </div>
           <h3>Ingest & Uncover.</h3>
           <p>
-            Review demo subscriptions and upload a sample statement to inspect
-            recurring costs.
+            Review subscriptions loaded from the running demo gateway and inspect
+            their recurring costs.
           </p>
           <div className="step-visual connect-visual">
-            {seedSubscriptions.slice(0, 4).map((s) => (
+            {active.slice(0, 4).map((s) => (
               <ProviderIcon key={s.id} sub={s} />
             ))}
             <span className="connect-plus">
@@ -47,23 +52,14 @@ export function HowItWorks() {
           </div>
           <h3>Vampire Risk Scoring.</h3>
           <p>
-            Instantly see total annualized waste. Flag highest-cost services and
-            preview immediate reclaimed cash.
+            See annualized cost from the active provider plans and ask Qwen for
+            a demo risk explanation.
           </p>
           <div className="step-visual discover-visual">
-            <span>Potential yearly savings</span>
+            <span>Supported active plans / year</span>
             <strong>
-              $719.88 <ArrowUpRight size={22} />
+              {overview.updatedAt ? money(potential) : "—"} <ArrowUpRight size={22} />
             </strong>
-            <div className="discovery-bars">
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-            </div>
           </div>
         </article>
         <article className="step">
@@ -81,8 +77,8 @@ export function HowItWorks() {
               <Sparkles size={18} />
             </span>
             <div>
-              <strong>Provider request recorded.</strong>
-              <span>Receipt and status returned.</span>
+              <strong>{requested.length ? `${requested.length} provider request${requested.length === 1 ? "" : "s"} recorded` : "Awaiting first provider request"}</strong>
+              <span>{requested.length ? "Status returned by the gateway." : "Open the dashboard to try it."}</span>
             </div>
             <Check size={18} />
           </div>

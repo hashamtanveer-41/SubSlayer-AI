@@ -27,7 +27,7 @@ export function InsightBanner({ active, onOpenCancel, onAnalyze, analyzing, back
         <p>
           {topSub
             ? `${topSub.name} ($${topSub.price}/${topSub.cycle.toLowerCase()}) is the largest supported recurring cost. Request a Qwen demo analysis or contact its provider API.`
-            : "No active supported demo subscriptions are available."}
+            : "No active demo provider is reachable right now."}
         </p>
         {insight && <p role="status" style={{ whiteSpace: "pre-wrap", marginTop: 8 }}>Qwen demo analysis: {insight}</p>}
       </div>

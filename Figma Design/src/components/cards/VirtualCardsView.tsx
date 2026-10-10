@@ -17,12 +17,14 @@ export interface VirtualCardsViewProps {
   cards: VirtualCard[]
   onToggleLock: (cardId: string) => void
   onSyncBackendCards?: (cards: VirtualCard[]) => void
+  backendReady: boolean
 }
 
 export function VirtualCardsView({
   cards,
   onToggleLock,
   onSyncBackendCards,
+  backendReady,
 }: VirtualCardsViewProps) {
   const [testCard, setTestCard] = useState<VirtualCard | null>(null)
   const [simulatorOpen, setSimulatorOpen] = useState(false)
@@ -42,6 +44,8 @@ export function VirtualCardsView({
       try { setWallet(await getDemoWalletApi()) } catch { setWallet(null) }
     }
     checkHealth()
+    const interval = window.setInterval(checkHealth, 5000)
+    return () => window.clearInterval(interval)
   }, [])
 
   // Manual sync from backend
@@ -94,9 +98,9 @@ export function VirtualCardsView({
                 fontWeight: 700,
                 padding: "2px 8px",
                 borderRadius: "12px",
-                background: "#dcfce7",
-                color: "#166534",
-                border: "1px solid #bbf7d0",
+              background: backendReady ? "#dcfce7" : "#fef2f2",
+              color: backendReady ? "#166534" : "#991b1b",
+              border: `1px solid ${backendReady ? "#bbf7d0" : "#fecaca"}`,
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "4px",
@@ -107,7 +111,7 @@ export function VirtualCardsView({
                   width: "5px",
                   height: "5px",
                   borderRadius: "50%",
-                  background: "#16a34a",
+                background: backendReady ? "#16a34a" : "#dc2626",
                 }}
               />
               {backendStatus}
@@ -180,7 +184,7 @@ export function VirtualCardsView({
                 gap: "18px",
               }}
             >
-              <VirtualCardVisual card={card} onToggleLock={onToggleLock} />
+              <VirtualCardVisual card={card} onToggleLock={onToggleLock} disabled={!backendReady} />
 
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div
@@ -195,6 +199,7 @@ export function VirtualCardsView({
                   <Button
                     variant={isLocked ? "primary" : "secondary"}
                     onClick={() => onToggleLock(card.id)}
+                    disabled={!backendReady}
                     style={{
                       fontSize: "11px",
                       padding: "6px 12px",
@@ -234,6 +239,7 @@ export function VirtualCardsView({
                     setTestCard(card)
                     setSimulatorOpen(true)
                   }}
+                  disabled={!backendReady}
                   style={{
                     border: "1px dashed #d8cbdc",
                     fontSize: "11px",

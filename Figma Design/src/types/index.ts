@@ -12,6 +12,8 @@ export type Subscription = {
   provider?: string
   providerSubscriptionId?: string | null
   latestCancellationTaskId?: string | null
+  providerRequestId?: string | null
+  cancellationEffectiveDate?: string | null
   projectedAnnualSavings?: number | null
   proofScreenshotUrl?: string | null
 }
@@ -88,9 +90,10 @@ export type CancellationTask = {
   taskId: string
   status: string
   result: AgentCompletedEvent | null
+  errorMessage?: string | null
 }
 
-export type Page = "landing" | "login" | "signup" | "app"
+export type Page = "landing" | "app"
 
 export type DashboardSection =
   | "Overview"

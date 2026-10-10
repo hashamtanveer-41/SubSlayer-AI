@@ -17,11 +17,3 @@ export const formatDate = (dateStr: string, options?: Intl.DateTimeFormatOptions
     options || { month: "short", day: "numeric", year: "numeric" },
   )
 }
-
-export function readStored<T>(key: string, fallback: T): T {
-  try {
-    return JSON.parse(localStorage.getItem(key) || "null") ?? fallback
-  } catch {
-    return fallback
-  }
-}

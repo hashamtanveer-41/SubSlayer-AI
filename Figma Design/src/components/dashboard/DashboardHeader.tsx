@@ -7,6 +7,7 @@ export interface DashboardHeaderProps {
   section: DashboardSection
   onToggleSidebar: () => void
   onOpenRenewals: () => void
+  backendReady: boolean
 }
 
 export function DashboardHeader({
@@ -14,6 +15,7 @@ export function DashboardHeader({
   section,
   onToggleSidebar,
   onOpenRenewals,
+  backendReady,
 }: DashboardHeaderProps) {
   return (
     <header className="dashboard-header">
@@ -32,7 +34,7 @@ export function DashboardHeader({
       </div>
       <div>
         <span className="demo-pill">
-          <span /> Live Agent Ready
+          <span style={{ backgroundColor: backendReady ? "#16a34a" : "#dc2626" }} /> {backendReady ? "Gateway connected" : "Gateway offline"}
         </span>
         <Button
           variant="ghost"

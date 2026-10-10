@@ -92,6 +92,10 @@ export function AgentExecutionModal({
               finish(selected, task.result)
               return
             }
+            if (task.status === "failed") {
+              attemptKey.current = ""
+              message = task.errorMessage || message
+            }
           } catch {
             // Keep the stream error visible if task recovery also fails.
           }

@@ -25,13 +25,6 @@ export function StatGrid({ spend, savings, active, cancelled }: StatGridProps) {
         <span className="stat-note">
           Annualized cost: {money(spend * 12)}/year
         </span>
-        <div className="stat-mini-bars">
-          {[35, 48, 38, 63, 52, 72, 63, 88, 78, 90, 72, 62].map(
-            (height, i) => (
-              <i key={i} style={{ height: `${height}%` }} />
-            ),
-          )}
-        </div>
       </article>
 
       <article className="stat-card">

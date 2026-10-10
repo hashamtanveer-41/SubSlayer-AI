@@ -2,6 +2,7 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react"
 import { Plus } from "lucide-react"
 import {
   getSubscriptionsApi,
+  getProviderHealthApi,
   getVirtualCards,
   analyzeSubscriptionApi,
   saveSubscriptionApi,
@@ -18,7 +19,6 @@ import { ControlCard } from "./ControlCard"
 import { DashboardHeader } from "./DashboardHeader"
 import { InsightBanner } from "./InsightBanner"
 import { RenewalsDialog } from "./RenewalsDialog"
-import { SettingsDialog } from "./SettingsDialog"
 import { Sidebar } from "./Sidebar"
 import { StatGrid } from "./StatGrid"
 import { SubscriptionsTable } from "./SubscriptionsTable"
@@ -49,23 +49,46 @@ export function Dashboard({
   const [selectedForCancel, setSelectedForCancel] = useState<Subscription | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notice, setNotice] = useState("")
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const [renewalsOpen, setRenewalsOpen] = useState(false)
   const [backendReady, setBackendReady] = useState(false)
+  const [lastSynced, setLastSynced] = useState<Date | null>(null)
+  const [onlineProviders, setOnlineProviders] = useState<string[]>([])
   const [aiInsight, setAiInsight] = useState("")
   const [analyzing, setAnalyzing] = useState(false)
 
-  // Sync with live FastAPI backend on initial mount
+  // Keep the dashboard aligned with gateway state, including changes made on
+  // another device. Failed refreshes leave the last known data visibly stale.
   useEffect(() => {
+    let mounted = true
+    let refreshing = false
     async function syncBackendData() {
-      const [liveCards, liveSubs] = await Promise.allSettled([
-        getVirtualCards(), getSubscriptionsApi(),
+      if (refreshing || document.hidden) return
+      refreshing = true
+      const providers = ["netflix", "spotify", "canva", "adobe"]
+      const [liveCards, liveSubs, ...health] = await Promise.allSettled([
+        getVirtualCards(), getSubscriptionsApi(), ...providers.map(getProviderHealthApi),
       ])
+      refreshing = false
+      if (!mounted) return
       if (liveCards.status === "fulfilled") setVirtualCards(liveCards.value)
       if (liveSubs.status === "fulfilled") setSubscriptions(liveSubs.value)
-      setBackendReady(liveCards.status === "fulfilled" && liveSubs.status === "fulfilled")
+      setOnlineProviders(providers.filter((_, index) => {
+        const result = health[index]
+        return result?.status === "fulfilled" && result.value
+      }))
+      const ready = liveCards.status === "fulfilled" && liveSubs.status === "fulfilled"
+      setBackendReady(ready)
+      if (ready) setLastSynced(new Date())
     }
     syncBackendData()
+    const interval = window.setInterval(syncBackendData, 5000)
+    const onFocus = () => syncBackendData()
+    window.addEventListener("focus", onFocus)
+    return () => {
+      mounted = false
+      window.clearInterval(interval)
+      window.removeEventListener("focus", onFocus)
+    }
   }, [])
 
   // Computed metrics
@@ -104,7 +127,9 @@ export function Dashboard({
   function handleCancelResult(sub: Subscription, event: AgentCompletedEvent) {
     setSubscriptions((current) => current.map((item) => item.id === sub.id
       ? { ...item, status: event.status === "success" ? "Cancelled" : "Pending Cancellation",
-          projectedAnnualSavings: event.projectedAnnualSavings }
+          projectedAnnualSavings: event.projectedAnnualSavings,
+          providerRequestId: event.providerRequestId,
+          cancellationEffectiveDate: event.effectiveDate }
       : item))
     setNotice(event.status === "success"
       ? `${sub.name} cancelled by demo provider. Receipt: ${event.providerRequestId}`
@@ -149,10 +174,11 @@ export function Dashboard({
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         activeCount={active.length}
-        onOpenSettings={() => setSettingsOpen(true)}
-        onOpenHelp={() =>
-          setNotice("Choose a supported demo provider and request cancellation through its API.")
-        }
+        backendReady={backendReady}
+        onOpenHelp={() => {
+          setSection("Subscriptions")
+          setNotice("Choose Netflix, Spotify, Canva, or Adobe, then confirm a demo API request.")
+        }}
         logout={logout}
       />
 
@@ -162,11 +188,13 @@ export function Dashboard({
           section={section}
           onToggleSidebar={() => setSidebarOpen(true)}
           onOpenRenewals={() => setRenewalsOpen(true)}
+          backendReady={backendReady}
         />
 
         <main className="dashboard-content">
           {!backendReady && <div className="permission-note" role="status">
-            Backend unavailable. Connect the gateway to load subscriptions, payments, and provider requests.
+            {lastSynced ? `Gateway unavailable. Showing last known data from ${lastSynced.toLocaleTimeString()}; actions are paused.`
+              : "Connecting to the gateway. Subscriptions, payments, and provider requests will load when it responds."}
           </div>}
           <div className="dashboard-title">
             <div>
@@ -189,6 +217,7 @@ export function Dashboard({
                       ? "Demo provider receipts and pending cancellation requests."
                       : "Lock demo card policies and test Stripe charges against the local wallet."}
               </p>
+              {backendReady && <p role="status">{onlineProviders.length} of 4 provider APIs reachable · Last updated {lastSynced?.toLocaleTimeString()}</p>}
             </div>
             {section !== "Virtual cards shield" && (
               <Button
@@ -214,7 +243,7 @@ export function Dashboard({
                 cancelled={cancelled}
               />
               <InsightBanner
-                active={active.filter((sub) => ["netflix", "spotify", "canva", "adobe"].includes(sub.provider || ""))}
+                active={active.filter((sub) => onlineProviders.includes(sub.provider || ""))}
                 onOpenCancel={(sub) => backendReady && setSelectedForCancel(sub)}
                 onAnalyze={handleAnalyze}
                 analyzing={analyzing}
@@ -235,6 +264,7 @@ export function Dashboard({
                 }}
                 onOpenCancel={(sub) => backendReady && setSelectedForCancel(sub)}
                 backendReady={backendReady}
+                onlineProviders={onlineProviders}
               />
               <div className="dashboard-lower">
                 <UpcomingRenewalsCard renewals={sortedRenewals} />
@@ -259,6 +289,7 @@ export function Dashboard({
               }}
               onOpenCancel={(sub) => backendReady && setSelectedForCancel(sub)}
               backendReady={backendReady}
+              onlineProviders={onlineProviders}
             />
           )}
 
@@ -268,6 +299,7 @@ export function Dashboard({
               cards={virtualCards}
               onToggleLock={handleToggleCardLock}
               onSyncBackendCards={setVirtualCards}
+              backendReady={backendReady}
             />
           )}
 
@@ -306,12 +338,6 @@ export function Dashboard({
         open={renewalsOpen}
         onOpenChange={setRenewalsOpen}
         renewals={sortedRenewals}
-      />
-
-      {/* Workspace Settings Dialog */}
-      <SettingsDialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
       />
 
       {/* Notification Toast */}

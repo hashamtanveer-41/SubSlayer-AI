@@ -29,11 +29,8 @@ export function LandingHeader({ navigate }: LandingHeaderProps) {
         </a>
       </nav>
       <div className="nav-actions">
-        <Button variant="ghost" onClick={() => navigate("login")}>
-          Log in
-        </Button>
-        <Button onClick={() => navigate("signup")}>
-          Launch App <ArrowUpRight size={16} />
+        <Button onClick={() => navigate("app")}>
+          Open Demo <ArrowUpRight size={16} />
         </Button>
         <Button
           variant="ghost"

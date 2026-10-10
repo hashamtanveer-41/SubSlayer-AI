@@ -32,7 +32,7 @@ export function AddEditSubscriptionDialog({
       status: editing?.status || "Active",
       mark: name.charAt(0).toUpperCase(),
       tone: editing?.tone || "custom",
-      vampireScore: editing?.vampireScore || Math.floor(Math.random() * 50) + 30,
+      vampireScore: editing?.vampireScore,
     }
     onSave(sub)
   }

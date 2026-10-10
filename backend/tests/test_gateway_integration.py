@@ -60,8 +60,13 @@ class GatewayIntegrationTests(unittest.TestCase):
                 "idempotencyKey": "gateway-canva-cancel-001"})
             self.assertEqual(duplicate.json()["taskId"], task_id)
             stream = self.client.get(f"/api/agent/stream/{task_id}")
+            refreshed = self.client.get("/api/subscriptions?refresh=true")
         self.assertEqual(stream.status_code, 200)
         self.assertIn("event: agent_completed", stream.text)
+        self.assertEqual(refreshed.status_code, 200)
+        live_sub = next(row for row in refreshed.json() if row["id"] == "sub_02")
+        self.assertEqual(live_sub["status"], "Cancelled")
+        self.assertTrue(live_sub["providerRequestId"])
         sub = next(row for row in self.client.get("/api/subscriptions").json() if row["id"] == "sub_02")
         self.assertEqual(sub["status"], "Cancelled")
         self.assertEqual(provider_client.get("/v1/subscriptions/canva-demo-001",

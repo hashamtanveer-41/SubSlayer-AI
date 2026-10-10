@@ -9,10 +9,10 @@ export interface ClosingCTAProps {
 export function ClosingCTA({ navigate }: ClosingCTAProps) {
   return (
     <section className="closing-cta">
-      <span className="eyebrow">RECLAIM YOUR CASH TODAY</span>
-      <h2>Stop letting auto-pay drain your account.</h2>
-      <p>Let your autonomous AI assistant handle the cancellation friction for you.</p>
-      <Button onClick={() => navigate("signup")}>
+      <span className="eyebrow">TRY THE CONNECTED DEMO</span>
+      <h2>Test provider cancellations and payment controls.</h2>
+      <p>Use the four simulated provider APIs, Qwen analysis, and Stripe test mode.</p>
+      <Button onClick={() => navigate("app")}>
         Launch SubSlayer AI <ArrowUpRight size={18} />
       </Button>
       <span className="cta-note">

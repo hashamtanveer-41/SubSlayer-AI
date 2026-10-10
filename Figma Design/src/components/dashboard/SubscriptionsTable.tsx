@@ -23,6 +23,7 @@ export interface SubscriptionsTableProps {
   onEdit: (sub: Subscription) => void
   onOpenCancel: (sub: Subscription) => void
   backendReady: boolean
+  onlineProviders: string[]
 }
 
 export function SubscriptionsTable({
@@ -36,6 +37,7 @@ export function SubscriptionsTable({
   onEdit,
   onOpenCancel,
   backendReady,
+  onlineProviders,
 }: SubscriptionsTableProps) {
   const isHistory = section === "Cancellation history"
 
@@ -91,7 +93,7 @@ export function SubscriptionsTable({
               <th>Subscription</th>
               <th>Category</th>
               <th>Cost</th>
-              <th>{isHistory ? "Cancellation Date" : "Next Renewal"}</th>
+              <th>{isHistory ? "Effective Date" : "Next Renewal"}</th>
               <th>Status</th>
               <th>Vampire Risk</th>
               <th />
@@ -118,7 +120,7 @@ export function SubscriptionsTable({
                     /{s.cycle === "Monthly" ? "mo" : "yr"}
                   </span>
                 </td>
-                <td>{formatDate(s.renewal)}</td>
+                <td>{isHistory ? s.cancellationEffectiveDate ? formatDate(s.cancellationEffectiveDate.slice(0, 10)) : "Awaiting provider" : formatDate(s.renewal)}</td>
                 <td>
                   <span
                     className={`status-pill ${s.status === "Cancelled" ? "cancelled" : ""}`}
@@ -126,6 +128,7 @@ export function SubscriptionsTable({
                     <span />
                     {s.status === "Cancelled" ? "Cancelled" : s.status === "Pending Cancellation" ? "Pending" : "Active"}
                   </span>
+                  {isHistory && s.providerRequestId && <small style={{ display: "block", marginTop: 4 }}>Receipt: {s.providerRequestId}</small>}
                 </td>
                 <td>
                   <span
@@ -166,7 +169,7 @@ export function SubscriptionsTable({
                         <Button
                           variant="ghost"
                           onClick={() => onOpenCancel(s)}
-                          disabled={!backendReady || !["netflix", "spotify", "canva", "adobe"].includes(s.provider || "")}
+                          disabled={!backendReady || !onlineProviders.includes(s.provider || "")}
                           style={{
                             color: "var(--accent)",
                             fontWeight: 600,

@@ -1,4 +1,6 @@
 import uuid
+import asyncio
+import os
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from app.domain.models import Subscription, CreateSubscriptionRequest, UpdateSubscriptionRequest, SubscriptionStatus, SubscriptionCycle
@@ -6,11 +8,45 @@ from app.api.deps import get_subscription_repo
 from app.services.repository import SubscriptionRepository
 from app.services.intelligence.vampire_scorer import VampireScorer
 from app.demo_common import PROVIDERS
+from app.services.providers.adapters import ProviderAdapterRegistry
+from app.services.providers.remote import ProviderUnavailable
 
 router = APIRouter(prefix="/api/subscriptions", tags=["Subscriptions"])
 
 @router.get("", response_model=List[Subscription])
-async def list_subscriptions(repo: SubscriptionRepository = Depends(get_subscription_repo)):
+async def list_subscriptions(refresh: bool = False,
+                             repo: SubscriptionRepository = Depends(get_subscription_repo)):
+    if refresh and os.getenv("PROVIDER_MODE", "remote").lower() != "fixture":
+        async def sync_provider(sub: Subscription) -> None:
+            if sub.provider not in PROVIDERS or not sub.providerSubscriptionId:
+                return
+            adapter = ProviderAdapterRegistry.get_adapter(sub.provider)
+            if adapter is None:
+                return
+            try:
+                live = await adapter.lookup_subscription(sub.providerSubscriptionId)
+            except (ProviderUnavailable, KeyError, ValueError, RuntimeError):
+                return
+            provider_status = live.get("status")
+            if provider_status == "cancelled":
+                status = SubscriptionStatus.CANCELLED
+            elif provider_status in ("scheduled", "pending", "cancellation_scheduled"):
+                status = SubscriptionStatus.PENDING_CANCELLATION
+            elif provider_status == "active":
+                task = repo.get_task(sub.latestCancellationTaskId) if sub.latestCancellationTaskId else None
+                if task and task.status in ("queued", "in_progress"):
+                    return
+                status = SubscriptionStatus.ACTIVE
+            else:
+                return
+            updated = sub.model_copy(update={
+                "status": status,
+                "providerRequestId": live.get("providerRequestId"),
+                "cancellationEffectiveDate": live.get("currentPeriodEnd"),
+            })
+            repo.update(updated)
+
+        await asyncio.gather(*(sync_provider(sub) for sub in repo.get_all()))
     return repo.get_all()
 
 @router.post("", response_model=Subscription)

@@ -41,7 +41,7 @@ export function FeatureStatement({ navigate }: FeatureStatementProps) {
             <span>Each demo cancellation requires your confirmation.</span>
           </div>
         </div>
-        <div className="benefit">
+        <div className="benefit" id="virtual-cards">
           <Zap size={19} />
           <div>
             <strong>Stripe Test Payment Shield.</strong>

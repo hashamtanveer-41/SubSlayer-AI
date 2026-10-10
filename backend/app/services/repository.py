@@ -1,4 +1,5 @@
 import threading
+from datetime import date, timedelta
 from typing import Dict, List, Optional
 from app.domain.models import Subscription, SubscriptionCycle, SubscriptionStatus, CancellationTask
 from app.demo_common import PROVIDERS
@@ -13,6 +14,9 @@ class SubscriptionRepository:
         self._seed_default_data()
 
     def _seed_default_data(self):
+        def renewal_in(days: int) -> str:
+            return (date.today() + timedelta(days=days)).isoformat()
+
         seeds = [
             Subscription(
                 id="sub_01",
@@ -20,7 +24,7 @@ class SubscriptionRepository:
                 category="Productivity",
                 price=59.99,
                 cycle=SubscriptionCycle.MONTHLY,
-                renewal="2026-06-28",
+                renewal=renewal_in(3),
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=88,
                 provider="adobe",
@@ -34,7 +38,7 @@ class SubscriptionRepository:
                 category="Productivity",
                 price=14.99,
                 cycle=SubscriptionCycle.MONTHLY,
-                renewal="2026-06-28",
+                renewal=renewal_in(7),
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=72,
                 provider="canva",
@@ -48,7 +52,7 @@ class SubscriptionRepository:
                 category="Entertainment",
                 price=15.49,
                 cycle=SubscriptionCycle.MONTHLY,
-                renewal="2026-06-24",
+                renewal=renewal_in(10),
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=65,
                 provider="netflix",
@@ -62,7 +66,7 @@ class SubscriptionRepository:
                 category="Entertainment",
                 price=10.99,
                 cycle=SubscriptionCycle.MONTHLY,
-                renewal="2026-06-26",
+                renewal=renewal_in(15),
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=55,
                 provider="spotify",
@@ -76,7 +80,7 @@ class SubscriptionRepository:
                 category="Productivity",
                 price=10.00,
                 cycle=SubscriptionCycle.MONTHLY,
-                renewal="2026-07-02",
+                renewal=renewal_in(20),
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=40,
                 provider="generic",
@@ -90,7 +94,7 @@ class SubscriptionRepository:
                 category="Storage",
                 price=2.99,
                 cycle=SubscriptionCycle.MONTHLY,
-                renewal="2026-07-05",
+                renewal=renewal_in(25),
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=25,
                 provider="generic",

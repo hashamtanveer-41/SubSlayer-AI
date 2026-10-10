@@ -1,11 +1,8 @@
 import {
   AdobeLogo,
-  ChatGPTLogo,
-  FigmaLogo,
+  CanvaLogo,
   NetflixLogo,
-  NotionLogo,
   SpotifyLogo,
-  YouTubeLogo,
 } from "../common/PlatformLogos"
 
 export function ProviderStrip() {
@@ -13,19 +10,16 @@ export function ProviderStrip() {
     { name: "Netflix", logo: <NetflixLogo size={24} /> },
     { name: "Spotify", logo: <SpotifyLogo size={24} /> },
     { name: "Adobe", logo: <AdobeLogo size={24} /> },
-    { name: "Notion", logo: <NotionLogo size={24} /> },
-    { name: "Figma", logo: <FigmaLogo size={24} /> },
-    { name: "ChatGPT", logo: <ChatGPTLogo size={24} /> },
-    { name: "YouTube", logo: <YouTubeLogo size={24} /> },
+    { name: "Canva", logo: <CanvaLogo size={24} /> },
   ]
 
   return (
     <section className="provider-strip" style={{ overflowX: "auto", padding: "26px 36px" }}>
       <span style={{ flexShrink: 0, marginRight: "12px" }}>
-        AUTONOMOUS CANCELLATION FOR
+        DEMO API CANCELLATION FOR
         <br />
         <strong style={{ color: "var(--color-ink)", fontWeight: 700 }}>
-          10,000+ POPULAR PLATFORMS
+          FOUR SUPPORTED PROVIDERS
         </strong>
       </span>
 
@@ -71,7 +65,7 @@ export function ProviderStrip() {
       </div>
 
       <span className="strip-more" style={{ flexShrink: 0, marginLeft: "8px" }}>
-        and any SaaS, gym, or streaming service.
+        Other subscriptions can be tracked, but cannot be cancelled in this demo.
       </span>
     </section>
   )

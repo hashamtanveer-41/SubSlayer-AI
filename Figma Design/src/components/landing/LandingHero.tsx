@@ -1,13 +1,18 @@
 import { ArrowUpRight, Check, CircleCheck, Play, ShieldCheck, Sparkles } from "lucide-react"
 import type { Page } from "../../types"
+import type { DemoOverview } from "../../hooks/useDemoOverview"
+import { money, monthly } from "../../utils/formatters"
 import { Button } from "../ui/Button"
 import { MiniDashboard } from "./MiniDashboard"
 
 export interface LandingHeroProps {
   navigate: (p: Page) => void
+  overview: DemoOverview
 }
 
-export function LandingHero({ navigate }: LandingHeroProps) {
+export function LandingHero({ navigate, overview }: LandingHeroProps) {
+  const cancelled = overview.subscriptions.filter((sub) => sub.status === "Cancelled")
+  const savings = cancelled.reduce((total, sub) => total + monthly(sub), 0)
   return (
     <section className="hero">
       <div className="hero-copy">
@@ -28,14 +33,12 @@ export function LandingHero({ navigate }: LandingHeroProps) {
           </span>
         </h1>
         <p>
-          The average consumer leaks $219/month on auto-renewing trials and hidden fees.
-          <br className="desktop-break" /> SubSlayer detects your vampire subscriptions,
-          shows recurring costs,
-          <br className="desktop-break" /> and sends confirmed requests to four demo provider APIs.
+          Inspect recurring costs from the live demo gateway, request Qwen analysis,
+          and send confirmed cancellation requests to four separate provider simulators.
         </p>
         <div className="hero-actions">
-          <Button onClick={() => navigate("signup")}>
-            Slay My Subscriptions <ArrowUpRight size={18} />
+          <Button onClick={() => navigate("app")}>
+            Open Live Dashboard <ArrowUpRight size={18} />
           </Button>
           <Button variant="ghost" onClick={() => navigate("app")}>
             <span className="play-circle">
@@ -55,19 +58,19 @@ export function LandingHero({ navigate }: LandingHeroProps) {
           <span className="tag-icon">
             <CircleCheck size={16} />
           </span>{" "}
-          Four connected demo providers.
+          {overview.onlineProviders} of 4 demo providers connected.
         </div>
-        <MiniDashboard />
+        <MiniDashboard overview={overview} />
         <div className="cancel-float">
           <span className="cancel-float-icon">
             <Check size={20} />
           </span>
           <div>
-            <strong>Consider it slayed.</strong>
-            <span>Adobe demo provider response received</span>
+            <strong>{cancelled.length ? `${cancelled.length} demo cancellation${cancelled.length === 1 ? "" : "s"} recorded` : "Provider requests are ready"}</strong>
+            <span>{overview.connected ? "Status comes from the gateway" : "Waiting for the gateway"}</span>
           </div>
           <span className="float-saving">
-            +$59.99<span>/month back</span>
+            {overview.updatedAt ? money(savings) : "—"}<span>/month projected</span>
           </span>
         </div>
         <div className="visual-caption">

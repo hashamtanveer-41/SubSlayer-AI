@@ -1,4 +1,5 @@
 import type { Page } from "../../types"
+import { useDemoOverview } from "../../hooks/useDemoOverview"
 import { ClosingCTA } from "./ClosingCTA"
 import { FAQSection } from "./FAQSection"
 import { FeatureStatement } from "./FeatureStatement"
@@ -13,13 +14,14 @@ export interface LandingProps {
 }
 
 export function Landing({ navigate }: LandingProps) {
+  const overview = useDemoOverview()
   return (
     <div className="landing">
       <LandingHeader navigate={navigate} />
       <main>
-        <LandingHero navigate={navigate} />
+        <LandingHero navigate={navigate} overview={overview} />
         <ProviderStrip />
-        <HowItWorks />
+        <HowItWorks overview={overview} />
         <FeatureStatement navigate={navigate} />
         <FAQSection />
         <ClosingCTA navigate={navigate} />

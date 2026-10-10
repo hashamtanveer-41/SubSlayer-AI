@@ -39,7 +39,7 @@ export async function getApiHealth(): Promise<ApiHealth | null> {
 
 // 2. Virtual Cards (Stripe Test Hub)
 export async function getVirtualCards(): Promise<VirtualCard[]> {
-  const res = await fetch(`${API_BASE_URL}/api/cards`)
+  const res = await fetch(`${API_BASE_URL}/api/cards`, { signal: AbortSignal.timeout(5000) })
   if (!res.ok) {
     throw new Error(`Failed to fetch cards: ${res.statusText}`)
   }
@@ -58,6 +58,7 @@ export async function toggleCardLockApi(
 ): Promise<VirtualCard> {
   const res = await fetch(`${API_BASE_URL}/api/cards/toggle-lock`, {
     method: "POST",
+    signal: AbortSignal.timeout(10000),
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ cardId, locked }),
   })
@@ -81,6 +82,7 @@ export async function simulateChargeApi(
 ): Promise<SimulateChargeResponse> {
   const res = await fetch(`${API_BASE_URL}/api/cards/simulate-charge`, {
     method: "POST",
+    signal: AbortSignal.timeout(30000),
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       cardId,
@@ -97,11 +99,22 @@ export async function simulateChargeApi(
 
 // 3. Subscriptions
 export async function getSubscriptionsApi(): Promise<Subscription[]> {
-  const res = await fetch(`${API_BASE_URL}/api/subscriptions`)
+  const res = await fetch(`${API_BASE_URL}/api/subscriptions?refresh=true`, { signal: AbortSignal.timeout(10000) })
   if (!res.ok) {
     throw new Error(`Failed to fetch subscriptions: ${res.statusText}`)
   }
   return await res.json()
+}
+
+export async function getProviderHealthApi(name: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/providers/${name}/health`, {
+      signal: AbortSignal.timeout(3000),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
 }
 
 export async function saveSubscriptionApi(sub: Subscription, editing: boolean): Promise<Subscription> {
@@ -109,6 +122,7 @@ export async function saveSubscriptionApi(sub: Subscription, editing: boolean): 
     cycle: sub.cycle, renewal: sub.renewal, provider: sub.provider || "generic" }
   const res = await fetch(`${API_BASE_URL}/api/subscriptions${editing ? `/${sub.id}` : ""}`, {
     method: editing ? "PATCH" : "POST",
+    signal: AbortSignal.timeout(10000),
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   })
@@ -117,7 +131,7 @@ export async function saveSubscriptionApi(sub: Subscription, editing: boolean): 
 }
 
 export async function getDemoWalletApi(): Promise<DemoWallet> {
-  const res = await fetch(`${API_BASE_URL}/api/demo-wallet`)
+  const res = await fetch(`${API_BASE_URL}/api/demo-wallet`, { signal: AbortSignal.timeout(5000) })
   if (!res.ok) throw await responseError(res)
   return await res.json()
 }
@@ -125,6 +139,7 @@ export async function getDemoWalletApi(): Promise<DemoWallet> {
 export async function analyzeSubscriptionApi(sub: Subscription): Promise<string> {
   const res = await fetch(`${API_BASE_URL}/api/ai/analyze`, {
     method: "POST",
+    signal: AbortSignal.timeout(40000),
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       provider: sub.provider,
@@ -149,7 +164,7 @@ export async function analyzeSubscriptionApi(sub: Subscription): Promise<string>
 }
 
 export async function getCancellationTaskApi(taskId: string): Promise<CancellationTask> {
-  const res = await fetch(`${API_BASE_URL}/api/agent/tasks/${taskId}`)
+  const res = await fetch(`${API_BASE_URL}/api/agent/tasks/${taskId}`, { signal: AbortSignal.timeout(5000) })
   if (!res.ok) throw await responseError(res)
   return await res.json()
 }
@@ -162,6 +177,7 @@ export async function startCancellationAgentApi(
 ): Promise<CancelAgentResponse> {
   const res = await fetch(`${API_BASE_URL}/api/agent/cancel`, {
     method: "POST",
+    signal: AbortSignal.timeout(10000),
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       subscriptionId,
