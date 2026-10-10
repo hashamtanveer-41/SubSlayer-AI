@@ -1,0 +1,10 @@
+{
+  "description": "Effortlessly manage and automate your subscriptions across various providers, ensuring seamless control without human intervention for ultimate convenience.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
