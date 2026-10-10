@@ -7,8 +7,8 @@
 
 ## ⚡ Quick Navigation
 
-- 📄 **[Master PRD & Team Playbook](file:///c:/Users/DELL/OneDrive/Desktop/SubSlayer-AI/product_requirements_document.md)** — **(Must Read)** Contains the full system architecture, API contracts, research data, 5-minute pitch script, and copy-paste AI prompts for each sub-team.
-- 🎨 **[Figma Design Workspace](file:///c:/Users/DELL/OneDrive/Desktop/SubSlayer-AI/Figma%20Design)** — React 19 + Vite + Tailwind CSS frontend application exported from Figma.
+- 🎨 **[Figma Design Workspace](./Figma%20Design)** — React 19 + Vite + Tailwind CSS frontend application exported from Figma.
+- ⚙️ **[Backend Service](./backend)** — FastAPI gateway, Stripe test shield, and provider orchestration routes.
 
 ---
 
@@ -48,6 +48,6 @@ pnpm dev     # or npm run dev
 
 ### Backend Development (FastAPI)
 ```bash
-# Refer to the Master PRD for complete requirements.txt and backend setup
-uvicorn main:app --reload --port 8000
+cd backend
+uvicorn app.main:app --reload --port 8000
 ```
