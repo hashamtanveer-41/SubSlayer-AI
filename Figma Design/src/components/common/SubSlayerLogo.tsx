@@ -1,0 +1,136 @@
+export interface SubSlayerLogoProps {
+  size?: number
+  className?: string
+  glow?: boolean
+  showBadge?: boolean
+}
+
+export function SubSlayerLogo({
+  size = 32,
+  className = "",
+  glow = false,
+  showBadge = true,
+}: SubSlayerLogoProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={{
+        display: "inline-block",
+        flexShrink: 0,
+        filter: glow ? "drop-shadow(0 0 12px rgba(244, 63, 94, 0.45))" : undefined,
+      }}
+    >
+      <defs>
+        {/* App Squircle Backdrop Gradient */}
+        <linearGradient id="ss-badge-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#351a42" />
+          <stop offset="50%" stopColor="#24122d" />
+          <stop offset="100%" stopColor="#14081b" />
+        </linearGradient>
+
+        {/* Upper-Left Crescent Gradient */}
+        <linearGradient id="ss-crescent-upper" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="35%" stopColor="#eed8fc" />
+          <stop offset="100%" stopColor="#a855f7" />
+        </linearGradient>
+
+        {/* Lower-Right Crescent Gradient */}
+        <linearGradient id="ss-crescent-lower" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#d946ef" />
+          <stop offset="60%" stopColor="#8b5cf6" />
+          <stop offset="100%" stopColor="#4c1d95" />
+        </linearGradient>
+
+        {/* AI Laser Energy Beam Gradient */}
+        <linearGradient id="ss-laser-beam" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#f43f5e" />
+          <stop offset="50%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#c084fc" />
+        </linearGradient>
+
+        {/* Badge Bevel Border */}
+        <linearGradient id="ss-badge-border" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="rgba(255, 255, 255, 0.28)" />
+          <stop offset="100%" stopColor="rgba(192, 132, 252, 0.12)" />
+        </linearGradient>
+      </defs>
+
+      {/* 1. Sleek Squircle App Badge Frame */}
+      {showBadge && (
+        <rect
+          x="1"
+          y="1"
+          width="30"
+          height="30"
+          rx="7.5"
+          fill="url(#ss-badge-bg)"
+          stroke="url(#ss-badge-border)"
+          strokeWidth="1"
+        />
+      )}
+
+      {/* 2. UPPER-LEFT CRESCENT (Severed Recurring Loop segment, shifted up-left) */}
+      <g transform="translate(-1.2, -1.2)">
+        <path
+          d="M 22 10 A 8.5 8.5 0 0 0 10 22 L 12.8 19.2 A 4.5 4.5 0 0 1 19.2 12.8 L 22 10 Z"
+          fill="url(#ss-crescent-upper)"
+        />
+      </g>
+
+      {/* 3. LOWER-RIGHT CRESCENT (Severed Recurring Loop segment, shifted down-right) */}
+      <g transform="translate(1.2, 1.2)">
+        <path
+          d="M 10 22 A 8.5 8.5 0 0 0 22 10 L 19.2 12.8 A 4.5 4.5 0 0 1 12.8 19.2 L 10 22 Z"
+          fill="url(#ss-crescent-lower)"
+        />
+      </g>
+
+      {/* 4. THE AI ENERGY SLASH (Razor Laser Beam cutting cleanly through the gap) */}
+      {/* Outer Thermal Glow Streak */}
+      <line
+        x1="6"
+        y1="26"
+        x2="26"
+        y2="6"
+        stroke="#f43f5e"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        opacity="0.45"
+      />
+
+      {/* Dynamic Laser Blade Core */}
+      <line
+        x1="6.5"
+        y1="25.5"
+        x2="25.5"
+        y2="6.5"
+        stroke="url(#ss-laser-beam)"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+
+      {/* Razor White-Hot Edge */}
+      <line
+        x1="9"
+        y1="23"
+        x2="23"
+        y2="9"
+        stroke="#ffffff"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
+
+      {/* 5. AI ENERGY CORE SPARK (Brilliant 4-Point Diamond Glint at the Slice Center) */}
+      <circle cx="16" cy="16" r="3.2" fill="#f43f5e" opacity="0.55" />
+      <circle cx="16" cy="16" r="1.4" fill="#ffffff" />
+      <line x1="13.2" y1="16" x2="18.8" y2="16" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
+      <line x1="16" y1="13.2" x2="16" y2="18.8" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
+    </svg>
+  )
+}

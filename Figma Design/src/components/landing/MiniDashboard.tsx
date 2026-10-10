@@ -1,14 +1,16 @@
-import { ArrowUpRight, ChevronDown, Sparkles } from "lucide-react"
+import { ArrowUpRight, ChevronDown } from "lucide-react"
 import { seedSubscriptions } from "../../data/seedData"
 import { money } from "../../utils/formatters"
 import { ProviderIcon } from "../common/ProviderIcon"
+import { SubSlayerLogo } from "../common/SubSlayerLogo"
 
 export function MiniDashboard() {
   return (
     <div className="mini-dashboard">
       <div className="mini-header">
-        <span className="mini-logo">
-          <span className="mini-logo-symbol">⚡</span> SubSlayer overview
+        <span className="mini-logo" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <SubSlayerLogo size={20} />
+          <span style={{ fontWeight: 700, letterSpacing: "-0.3px" }}>SubSlayer Overview</span>
         </span>
         <span className="mini-date">
           June 2026 <ChevronDown size={12} />
@@ -51,12 +53,9 @@ export function MiniDashboard() {
         </div>
       ))}
       <div className="mini-agent">
-        <span className="agent-symbol">
-          <Sparkles size={15} />
-        </span>
         <div>
-          <strong>Autonomous agent ready to intervene.</strong>
-          <span>Slay vampire subscriptions with one click.</span>
+          <strong>Automated cancellation available.</strong>
+          <span>Cancel unwanted subscriptions with one click.</span>
         </div>
         <ArrowUpRight size={17} />
       </div>

@@ -1,11 +1,19 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Plus } from "lucide-react"
-import type { DashboardSection, Subscription, VirtualCard } from "../../types"
+import {
+  analyzeSubscriptionApi,
+  getSubscriptionsApi,
+  getVirtualCards,
+  toggleCardLockApi,
+  type AiAnalysisResult,
+} from "../../services/api"
+import type { DashboardSection, Page, Subscription, User, VirtualCard } from "../../types"
 import { monthly } from "../../utils/formatters"
 import { AgentExecutionModal } from "../agent/AgentExecutionModal"
 import { VirtualCardsView } from "../cards/VirtualCardsView"
 import { Toast } from "../common/Toast"
 import { Button } from "../ui/Button"
+import { toast } from "../ui"
 import { AddEditSubscriptionDialog } from "./AddEditSubscriptionDialog"
 import { ControlCard } from "./ControlCard"
 import { DashboardHeader } from "./DashboardHeader"
@@ -19,22 +27,26 @@ import { UpcomingRenewalsCard } from "./UpcomingRenewalsCard"
 
 export interface DashboardProps {
   name: string
+  user?: User | null
   subscriptions: Subscription[]
   setSubscriptions: (subs: Subscription[]) => void
   virtualCards: VirtualCard[]
   setVirtualCards: (cards: VirtualCard[]) => void
   onResetSeedData: () => void
   logout: () => void
+  onNavigate?: (p: Page) => void
 }
 
 export function Dashboard({
   name,
+  user,
   subscriptions,
   setSubscriptions,
   virtualCards,
   setVirtualCards,
   onResetSeedData,
   logout,
+  onNavigate,
 }: DashboardProps) {
   const [section, setSection] = useState<DashboardSection>("Overview")
   const [search, setSearch] = useState("")
@@ -46,6 +58,30 @@ export function Dashboard({
   const [notice, setNotice] = useState("")
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [renewalsOpen, setRenewalsOpen] = useState(false)
+  const [aiInsight, setAiInsight] = useState<AiAnalysisResult | null>(null)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzingSubId, setAnalyzingSubId] = useState<string | null>(null)
+
+  // Sync with live FastAPI backend on initial mount
+  useEffect(() => {
+    async function syncBackendData() {
+      try {
+        const [liveCards, liveSubs] = await Promise.allSettled([
+          getVirtualCards(),
+          getSubscriptionsApi(),
+        ])
+        if (liveCards.status === "fulfilled" && liveCards.value.length > 0) {
+          setVirtualCards(liveCards.value)
+        }
+        if (liveSubs.status === "fulfilled" && liveSubs.value.length > 0) {
+          setSubscriptions(liveSubs.value)
+        }
+      } catch (e) {
+        console.warn("Backend sync fallback to local store:", e)
+      }
+    }
+    syncBackendData()
+  }, [])
 
   // Computed metrics
   const active = subscriptions.filter((s) => s.status === "Active")
@@ -104,23 +140,37 @@ export function Dashboard({
     setNotice(`Restored ${sub.name} to active monitoring.`)
   }
 
-  function handleToggleCardLock(cardId: string) {
+  async function handleToggleCardLock(cardId: string) {
+    const target = virtualCards.find((c) => c.id === cardId)
+    const newLocked = !(target?.balanceLocked ?? target?.demoPolicyLocked ?? target?.status === "locked")
+
+    // Optimistic UI update
     setVirtualCards(
       virtualCards.map((c) =>
         c.id === cardId
           ? {
               ...c,
-              balanceLocked: !c.balanceLocked,
-              status: !c.balanceLocked ? "Locked" : "Active",
+              balanceLocked: newLocked,
+              demoPolicyLocked: newLocked,
+              status: newLocked ? "locked" : "active",
             }
           : c,
       ),
     )
-    const target = virtualCards.find((c) => c.id === cardId)
+
+    try {
+      const updated = await toggleCardLockApi(cardId, newLocked)
+      setVirtualCards(
+        virtualCards.map((c) => (c.id === cardId ? updated : c)),
+      )
+    } catch {
+      // Local fallback
+    }
+
     setNotice(
-      target?.balanceLocked
-        ? `Unlocked virtual card for ${target.merchant}.`
-        : `Card balance locked to $0.00! Real bank account shielded.`,
+      newLocked
+        ? `Card balance locked to $0.00! Stripe payment shield active.`
+        : `Unlocked virtual card for ${target?.merchant || target?.label || "Service"}.`,
     )
   }
 
@@ -137,10 +187,39 @@ export function Dashboard({
     )
   }
 
+  async function handleAnalyze(sub: Subscription) {
+    setAnalyzing(true)
+    setAnalyzingSubId(sub.id)
+    const toastId = toast.loading("Analyzing with AI...", {
+      description: `Evaluating ${sub.name} (${sub.category}) for recurring vampire traits...`,
+    })
+
+    try {
+      const result = await analyzeSubscriptionApi(sub)
+      setAiInsight(result)
+      setSubscriptions(
+        subscriptions.map((s) => (s.id === sub.id ? { ...s, vampireScore: result.riskScore } : s)),
+      )
+      toast.success("AI Analysis Complete", {
+        id: toastId,
+        description: result.formattedSummary,
+      })
+    } catch (err: any) {
+      toast.error("Analysis unavailable", {
+        id: toastId,
+        description: err?.message || "AI analysis unavailable",
+      })
+    } finally {
+      setAnalyzing(false)
+      setAnalyzingSubId(null)
+    }
+  }
+
   return (
     <div className="dashboard">
       <Sidebar
         name={name}
+        user={user}
         section={section}
         setSection={setSection}
         sidebarOpen={sidebarOpen}
@@ -151,15 +230,19 @@ export function Dashboard({
           setNotice("Choose an active subscription and click Auto-Cancel to deploy the AI agent.")
         }
         logout={logout}
+        onNavigate={onNavigate}
       />
 
       <div className="dashboard-main">
         <DashboardHeader
           name={name}
+          user={user}
           section={section}
           onToggleSidebar={() => setSidebarOpen(true)}
           onOpenRenewals={() => setRenewalsOpen(true)}
+          onNavigate={onNavigate}
         />
+
 
         <main className="dashboard-content">
           <div className="dashboard-title">
@@ -209,6 +292,9 @@ export function Dashboard({
               <InsightBanner
                 active={active}
                 onOpenCancel={(sub) => setSelectedForCancel(sub)}
+                onAnalyze={handleAnalyze}
+                analyzing={analyzing}
+                insight={aiInsight}
               />
               <SubscriptionsTable
                 section={section}
@@ -224,6 +310,9 @@ export function Dashboard({
                 }}
                 onOpenCancel={(sub) => setSelectedForCancel(sub)}
                 onRestore={handleRestoreSubscription}
+                onAnalyze={handleAnalyze}
+                analyzingSubId={analyzingSubId}
+                onNavigate={onNavigate}
               />
               <div className="dashboard-lower">
                 <UpcomingRenewalsCard renewals={sortedRenewals} />
@@ -249,8 +338,12 @@ export function Dashboard({
               onOpenCancel={(sub) => setSelectedForCancel(sub)}
               onRestore={handleRestoreSubscription}
               onViewProof={(sub) => setSelectedForCancel(sub)}
+              onAnalyze={handleAnalyze}
+              analyzingSubId={analyzingSubId}
+              onNavigate={onNavigate}
             />
           )}
+
 
           {/* Section: Virtual Cards Shield (Feature 2) */}
           {section === "Virtual cards shield" && (

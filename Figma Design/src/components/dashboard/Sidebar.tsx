@@ -1,20 +1,20 @@
 import {
-  ChevronDown,
   CircleHelp,
   CirclePause,
   CreditCard,
+  FlaskConical,
   LayoutDashboard,
   LogOut,
   Shield,
   SlidersHorizontal,
-  Sparkles,
 } from "lucide-react"
-import type { DashboardSection } from "../../types"
+import type { DashboardSection, Page, User } from "../../types"
 import { Brand } from "../common/Brand"
 import { Button } from "../ui/Button"
 
 export interface SidebarProps {
   name: string
+  user?: User | null
   section: DashboardSection
   setSection: (s: DashboardSection) => void
   sidebarOpen: boolean
@@ -23,10 +23,12 @@ export interface SidebarProps {
   onOpenSettings: () => void
   onOpenHelp: () => void
   logout: () => void
+  onNavigate?: (p: Page) => void
 }
 
 export function Sidebar({
   name,
+  user,
   section,
   setSection,
   sidebarOpen,
@@ -35,6 +37,7 @@ export function Sidebar({
   onOpenSettings,
   onOpenHelp,
   logout,
+  onNavigate,
 }: SidebarProps) {
   const navItems: { label: DashboardSection; icon: typeof LayoutDashboard }[] = [
     { label: "Overview", icon: LayoutDashboard },
@@ -57,72 +60,88 @@ export function Sidebar({
             setSection("Overview")
             setSidebarOpen(false)
           }}
-          showBadge
         />
-        <div className="workspace">
-          <span className="workspace-avatar">
-            {name.charAt(0).toUpperCase()}
-          </span>
-          <div>
-            <strong>Personal Workspace</strong>
-            <span>Active Financial Defense</span>
-          </div>
-          <ChevronDown size={15} />
-        </div>
-        <span className="nav-label">CONTROL CENTER</span>
+        <span className="nav-label" style={{ marginTop: "24px" }}>CONTROL CENTER</span>
         <nav className="dashboard-nav">
           {navItems.map(({ label, icon: Icon }) => (
             <Button
               key={label}
               variant="ghost"
               className={section === label ? "selected" : ""}
+              title={label}
               onClick={() => {
                 setSection(label)
                 setSidebarOpen(false)
               }}
             >
-              <Icon size={18} />
-              {label}
+              <Icon size={18} className="nav-icon" />
+              <span className="nav-label-text">{label}</span>
               {label === "Subscriptions" && (
                 <span className="nav-count">{activeCount}</span>
               )}
             </Button>
           ))}
-        </nav>
-        <div className="sidebar-note">
-          <span className="agent-symbol">
-            <Sparkles size={20} />
-          </span>
-          <strong>AI Assassin Standing By.</strong>
-          <p>Ready to deploy browser agents to auto-cancel vampire subscriptions.</p>
           <Button
-            variant="secondary"
+            variant="ghost"
+            title="Provider Sandboxes (Live Demo Sites)"
             onClick={() => {
-              setSection("Subscriptions")
               setSidebarOpen(false)
+              onNavigate?.("sandbox")
+            }}
+            style={{
+              marginTop: "4px",
+              border: "1px dashed #d8cbdc",
+              background: "rgba(112, 75, 115, 0.04)",
             }}
           >
-            Review Subscriptions
+            <FlaskConical size={18} className="nav-icon" style={{ color: "var(--accent)" }} />
+            <span className="nav-label-text">Provider Sandboxes</span>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontSize: "9px",
+                fontWeight: 800,
+                background: "#10b981",
+                color: "#ffffff",
+                padding: "2px 5px",
+                borderRadius: "4px",
+                lineHeight: 1,
+              }}
+            >
+              LIVE
+            </span>
           </Button>
-        </div>
+        </nav>
         <div className="sidebar-bottom">
-          <Button variant="ghost" onClick={onOpenSettings}>
-            <SlidersHorizontal size={18} />
-            Preferences
+          <Button variant="ghost" title="Preferences" onClick={onOpenSettings}>
+            <SlidersHorizontal size={18} className="nav-icon" />
+            <span className="nav-label-text">Preferences</span>
           </Button>
-          <Button variant="ghost" onClick={onOpenHelp}>
-            <CircleHelp size={18} />
-            How Agent Works
+          <Button variant="ghost" title="How Agent Works" onClick={onOpenHelp}>
+            <CircleHelp size={18} className="nav-icon" />
+            <span className="nav-label-text">How Agent Works</span>
           </Button>
           <div className="sidebar-profile">
-            <span className="profile-avatar">
-              {name.charAt(0).toUpperCase()}
-            </span>
-            <div>
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={name}
+                referrerPolicy="no-referrer"
+                className="profile-avatar"
+                style={{ objectFit: "cover", width: "36px", height: "36px", borderRadius: "50%" }}
+              />
+            ) : (
+              <span className="profile-avatar" title={name}>
+                {name.charAt(0).toUpperCase()}
+              </span>
+            )}
+            <div className="sidebar-profile-info">
               <strong>{name}</strong>
-              <span>Demo Account</span>
+              <span style={{ fontSize: "11px", opacity: 0.85, overflow: "hidden", textOverflow: "ellipsis", maxWidth: "120px" }}>
+                {user?.email || "Demo Account"}
+              </span>
             </div>
-            <Button variant="ghost" aria-label="Log out" onClick={logout}>
+            <Button variant="ghost" aria-label="Log out" title="Log out" onClick={logout} className="logout-button">
               <LogOut size={17} />
             </Button>
           </div>
