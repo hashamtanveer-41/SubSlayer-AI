@@ -518,14 +518,56 @@ export function SandboxSplitView({
         {/* Right Pane: Live Provider Portal (Spotify or Adobe) */}
         <div
           style={{
-            background: "#121212",
+            background: activeProvider === "spotify" ? "#121212" : "#f8f9fa",
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
           }}
         >
+          {/* Mini Browser Bar */}
+          <div
+            style={{
+              background: "#1e1824",
+              borderBottom: "1px solid #2e2436",
+              padding: "8px 16px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              fontSize: "12px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#ff5f56", display: "inline-block" }} />
+              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#ffbd2e", display: "inline-block" }} />
+              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#27c93f", display: "inline-block" }} />
+            </div>
+
+            <div
+              style={{
+                flex: 1,
+                background: "#120e17",
+                border: "1px solid #33283b",
+                borderRadius: "16px",
+                padding: "4px 12px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "11.5px",
+                color: "#d1c7d6",
+              }}
+            >
+              <Lock size={11} color="#10b981" />
+              <span>
+                {activeProvider === "spotify"
+                  ? "https://accounts.spotify.com/en/account/overview"
+                  : "https://account.adobe.com/plans"}
+              </span>
+            </div>
+          </div>
+
           {activeProvider === "spotify" ? (
             <SpotifyDemoPortal
+              embedded={true}
               onNavigate={onNavigate}
               currentSubscription={targetSub}
               onSubscriptionUpdated={(sub) => {
@@ -539,11 +581,12 @@ export function SandboxSplitView({
             />
           ) : (
             <AdobeDemoPortal
+              embedded={true}
               onNavigate={onNavigate}
               currentSubscription={targetSub}
               onSubscriptionUpdated={(sub) => {
                 setSubscriptions(subscriptions.map((s) => (s.id === sub.id ? sub : s)))
-                addLog(`Adobe cancellation confirmed.`, "agent")
+                addLog(`Adobe cancellation confirmed ($0.00 fee).`, "agent")
               }}
               virtualCard={targetCard}
               onCardUpdated={(c) => {
