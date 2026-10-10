@@ -33,7 +33,11 @@ async def upload_statement(
     response = StatementParser.parse_csv_content(csv_text)
 
     # Ingest parsed subscriptions into repository
+    linked_subscriptions = []
     for sub in response.subscriptions:
-        repo.add(sub)
+        existing = (repo.get_by_provider_subscription_id(sub.provider, sub.providerSubscriptionId)
+                    if sub.providerSubscriptionId else None)
+        linked_subscriptions.append(existing if existing else repo.add(sub))
+    response.subscriptions = linked_subscriptions
 
     return response

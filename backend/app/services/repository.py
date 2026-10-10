@@ -1,6 +1,7 @@
 import threading
 from typing import Dict, List, Optional
 from app.domain.models import Subscription, SubscriptionCycle, SubscriptionStatus, CancellationTask
+from app.demo_common import PROVIDERS
 
 class SubscriptionRepository:
     """Thread-safe in-memory repository for subscriptions and tasks."""
@@ -23,7 +24,7 @@ class SubscriptionRepository:
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=88,
                 provider="adobe",
-                providerSubscriptionId="demo_adobe_sub_01",
+                providerSubscriptionId=PROVIDERS["adobe"]["subscription_id"],
                 mark="A",
                 tone="adobe",
             ),
@@ -37,7 +38,7 @@ class SubscriptionRepository:
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=72,
                 provider="canva",
-                providerSubscriptionId="demo_canva_sub_02",
+                providerSubscriptionId=PROVIDERS["canva"]["subscription_id"],
                 mark="C",
                 tone="canva",
             ),
@@ -51,7 +52,7 @@ class SubscriptionRepository:
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=65,
                 provider="netflix",
-                providerSubscriptionId="demo_netflix_sub_03",
+                providerSubscriptionId=PROVIDERS["netflix"]["subscription_id"],
                 mark="N",
                 tone="netflix",
             ),
@@ -65,7 +66,7 @@ class SubscriptionRepository:
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=55,
                 provider="spotify",
-                providerSubscriptionId="demo_spotify_sub_04",
+                providerSubscriptionId=PROVIDERS["spotify"]["subscription_id"],
                 mark="S",
                 tone="spotify",
             ),
@@ -109,6 +110,11 @@ class SubscriptionRepository:
         with self._lock:
             return self._subscriptions.get(sub_id)
 
+    def get_by_provider_subscription_id(self, provider: str, provider_id: str) -> Optional[Subscription]:
+        with self._lock:
+            return next((sub for sub in self._subscriptions.values()
+                         if sub.provider == provider and sub.providerSubscriptionId == provider_id), None)
+
     def add(self, sub: Subscription) -> Subscription:
         with self._lock:
             self._subscriptions[sub.id] = sub
@@ -128,3 +134,7 @@ class SubscriptionRepository:
     def get_task(self, task_id: str) -> Optional[CancellationTask]:
         with self._lock:
             return self._tasks.get(task_id)
+
+    def get_task_by_idempotency_key(self, key: str) -> Optional[CancellationTask]:
+        with self._lock:
+            return next((task for task in self._tasks.values() if task.idempotencyKey == key), None)

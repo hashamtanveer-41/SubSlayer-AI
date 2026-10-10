@@ -78,7 +78,7 @@ class DemoFlowTests(unittest.TestCase):
         self.assertEqual(second.status_code, 200)
         self.assertEqual(first.json()["billing"]["stripe_intent_id"], "pi_test_001")
         self.assertEqual(len(stripe_calls), 1)
-        self.assertEqual(self.hub.get("/api/demo-wallet", headers=self.headers).json()["balance_cents"], 8401)
+        self.assertEqual(self.hub.get("/api/demo-wallet", headers=self.headers).json()["balance_cents"], 8451)
 
     def test_decline_restores_wallet_and_qwen_uses_requested_model(self):
         declined = httpx.Response(402, json={"error": {"message": "declined"}},
@@ -95,7 +95,7 @@ class DemoFlowTests(unittest.TestCase):
                                 request=httpx.Request("POST", "https://maas.qwencloudapi.com/compatible-mode/v1/chat/completions"))
         with patch("httpx.post", return_value=answer) as post:
             reply = self.hub.post("/api/ai/analyze", headers=self.headers, json={
-                "provider": "netflix", "monthly_cost_cents": 1599, "category": "entertainment"})
+                "provider": "netflix", "monthly_cost_cents": 1549, "category": "entertainment"})
         self.assertEqual(reply.status_code, 200)
         self.assertEqual(reply.json()["model"], "qwen3.8-flash")
         self.assertEqual(post.call_args.args[0], "https://maas.qwencloudapi.com/compatible-mode/v1/chat/completions")
@@ -105,14 +105,14 @@ class DemoFlowTests(unittest.TestCase):
         successful = httpx.Response(200, json={"id": "pi_retry_001", "status": "succeeded"},
                                     request=httpx.Request("POST", "https://api.stripe.com/v1/payment_intents"))
         payload = {"provider": "spotify", "subscription_id": "spotify-demo-001",
-                   "amount_cents": 1199, "idempotency_key": "charge-retry-0001"}
+                   "amount_cents": 1099, "idempotency_key": "charge-retry-0001"}
         with patch("httpx.post", side_effect=[httpx.TimeoutException("unknown"), successful]) as post:
             first = self.hub.post("/internal/billing/charge", headers=self.headers, json=payload)
             self.assertEqual(first.status_code, 502)
-            self.assertEqual(self.hub.get("/api/demo-wallet", headers=self.headers).json()["balance_cents"], 8801)
+            self.assertEqual(self.hub.get("/api/demo-wallet", headers=self.headers).json()["balance_cents"], 8901)
             second = self.hub.post("/internal/billing/charge", headers=self.headers, json=payload)
         self.assertEqual(second.status_code, 200)
-        self.assertEqual(second.json()["wallet_balance_cents"], 8801)
+        self.assertEqual(second.json()["wallet_balance_cents"], 8901)
         self.assertEqual(post.call_count, 2)
         self.assertEqual(post.call_args_list[0].kwargs["headers"], post.call_args_list[1].kwargs["headers"])
 

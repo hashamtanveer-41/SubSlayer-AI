@@ -8,7 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-from app.api.routes import subscriptions, agent, cards, statement
+from app.api.routes import subscriptions, agent, cards, statement, demo
+from app import demo_hub
 
 app = FastAPI(
     title="SubSlayer AI API Gateway",
@@ -16,18 +17,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS for frontend Vite dev servers
+# Configure CORS for frontend Vite dev servers; never combine credentials with a wildcard origin.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8443",
-        "http://127.0.0.1:8443",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "*"
-    ],
+    allow_origins=[origin.strip() for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8443,"
+        "http://127.0.0.1:8443,http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,6 +35,9 @@ app.include_router(subscriptions.router)
 app.include_router(agent.router)
 app.include_router(cards.router)
 app.include_router(statement.router)
+app.include_router(demo.router)
+# The provider devices call this authenticated hub for all Stripe-backed charges.
+app.mount("/demo", demo_hub.app)
 
 @app.get("/health")
 async def health_check():

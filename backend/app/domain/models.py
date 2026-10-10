@@ -86,6 +86,7 @@ class CancellationTask(BaseModel):
     taskId: str
     subscriptionId: str
     provider: str
+    idempotencyKey: str = ""
     status: str = "queued"
     steps: List[AgentStepEvent] = []
     result: Optional[AgentCompletedEvent] = None

@@ -21,8 +21,8 @@ def test_subscriptions():
 
 def test_create_subscription():
     payload = {
-        "provider": "netflix",
-        "name": "Netflix Premium",
+        "provider": "generic",
+        "name": "Custom Subscription",
         "category": "Entertainment",
         "price": 22.99,
         "cycle": "Monthly",
@@ -31,8 +31,9 @@ def test_create_subscription():
     res = client.post("/api/subscriptions", json=payload)
     assert res.status_code == 200
     data = res.json()
-    assert data["name"] == "Netflix Premium"
-    assert data["vampireScore"] >= 50
+    assert data["name"] == "Custom Subscription"
+    duplicate = client.post("/api/subscriptions", json={**payload, "provider": "netflix", "name": "Netflix Premium", "price": 15.49})
+    assert duplicate.status_code == 409
 
 def test_statement_upload():
     res = client.post("/api/statement/upload", json={"useDemo": True})
@@ -98,11 +99,11 @@ def test_agent_cancellation_lifecycle():
         assert any("agent_step" in line for line in lines)
         assert any("agent_completed" in line for line in lines)
 
-    # 4. Verify subscription marked Cancelled in repository
+    # 4. A scheduled provider response is pending until its effective date.
     sub_res = client.get("/api/subscriptions")
     subs = sub_res.json()
     sub_02 = next(s for s in subs if s["id"] == "sub_02")
-    assert sub_02["status"] == "Cancelled"
+    assert sub_02["status"] == "Pending Cancellation"
     assert sub_02["projectedAnnualSavings"] > 0
 
 if __name__ == "__main__":

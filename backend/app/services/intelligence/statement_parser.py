@@ -5,6 +5,7 @@ from typing import List
 from app.domain.models import Subscription, SubscriptionCycle, SubscriptionStatus, StatementUploadResponse
 from app.services.intelligence.vampire_scorer import VampireScorer
 from app.services.finance.cost_calculator import CostCalculator
+from app.demo_common import PROVIDERS
 
 class StatementParser:
     """
@@ -61,7 +62,8 @@ class StatementParser:
                 status=SubscriptionStatus.ACTIVE,
                 vampireScore=vampire_score,
                 provider=matched_provider,
-                providerSubscriptionId=f"demo_{matched_provider}_sub_{uuid.uuid4().hex[:4]}",
+                providerSubscriptionId=(PROVIDERS[matched_provider]["subscription_id"]
+                                        if matched_provider in PROVIDERS else None),
                 mark=display_name[0].upper() if display_name else "S",
                 tone=matched_provider if matched_provider != "generic" else "neutral",
             )

@@ -12,6 +12,7 @@ from app.domain.models import (
     CancellationTask,
 )
 from app.services.providers.adapters import ProviderAdapterRegistry
+from app.services.providers.remote import ProviderUnavailable
 from app.services.finance.cost_calculator import CostCalculator
 
 class CancellationOrchestrator:
@@ -40,6 +41,18 @@ class CancellationOrchestrator:
         normalized_provider = provider.lower().strip()
         if not ProviderAdapterRegistry.is_supported(normalized_provider):
             raise ValueError(f"Provider '{provider}' is not supported. Supported demo providers: netflix, spotify, canva, adobe.")
+        if sub.provider != normalized_provider:
+            raise ValueError("Subscription does not belong to the requested provider")
+        if not sub.providerSubscriptionId:
+            raise ValueError("Subscription has no provider demo ID")
+        if len(idempotency_key) < 8:
+            raise ValueError("Idempotency key must contain at least 8 characters")
+        existing = self.repo.get_task_by_idempotency_key(idempotency_key)
+        if existing:
+            if existing.subscriptionId != subscription_id or existing.provider != normalized_provider:
+                raise ValueError("Idempotency key was used for another cancellation")
+            return CancelAgentResponse(taskId=existing.taskId, status=existing.status,
+                                       streamUrl=f"/api/agent/stream/{existing.taskId}")
 
         task_id = f"task_cancel_{uuid.uuid4().hex[:8]}"
         now_iso = datetime.now(timezone.utc).isoformat()
@@ -48,6 +61,7 @@ class CancellationOrchestrator:
             taskId=task_id,
             subscriptionId=subscription_id,
             provider=normalized_provider,
+            idempotencyKey=idempotency_key,
             status="queued",
             steps=[],
             result=None,
@@ -74,6 +88,9 @@ class CancellationOrchestrator:
         task = self.repo.get_task(task_id)
         if not task:
             yield f"event: error\ndata: {json.dumps({'error': 'Task not found'})}\n\n"
+            return
+        if task.result is not None:
+            yield f"event: agent_completed\ndata: {task.result.model_dump_json()}\n\n"
             return
 
         sub = self.repo.get_by_id(task.subscriptionId)
@@ -114,17 +131,25 @@ class CancellationOrchestrator:
         yield f"event: agent_step\ndata: {step2.model_dump_json()}\n\n"
 
         # Call provider adapter
-        idempotency_key = f"cancel-{sub.id}-{task_id}"
-        provider_resp = await adapter.request_cancellation(
-            provider_sub_id=sub.providerSubscriptionId or f"demo_{task.provider}_{sub.id}",
-            idempotency_key=idempotency_key,
-            context={"subscription": sub.model_dump()}
-        )
+        try:
+            provider_resp = await adapter.request_cancellation(
+                provider_sub_id=sub.providerSubscriptionId,
+                idempotency_key=task.idempotencyKey,
+                context={"subscription": sub.model_dump()}
+            )
+        except ProviderUnavailable as exc:
+            task.status = "failed"
+            task.updatedAt = datetime.now(timezone.utc).isoformat()
+            self.repo.save_task(task)
+            sub.status = SubscriptionStatus.ACTIVE
+            self.repo.update(sub)
+            yield f"event: error\ndata: {json.dumps({'error': str(exc), 'taskId': task_id})}\n\n"
+            return
 
         # Step 3: Received provider response
         await asyncio.sleep(1.0)
         provider_status = provider_resp.get("providerStatus", "cancellation_scheduled")
-        effective_date = provider_resp.get("effectiveDate", sub.renewal)
+        effective_date = provider_resp.get("effectiveDate")
         step3 = AgentStepEvent(
             step=3,
             total=4,
@@ -139,7 +164,7 @@ class CancellationOrchestrator:
         await asyncio.sleep(0.8)
         annual_savings = CostCalculator.get_annual_cost(sub.price, sub.cycle)
         completed_event = AgentCompletedEvent(
-            status="success",
+            status="pending" if provider_status in ("pending", "cancellation_scheduled") else "success",
             subscriptionId=sub.id,
             provider=task.provider,
             providerRequestId=provider_resp.get("providerRequestId", f"demo_req_{uuid.uuid4().hex[:6]}"),
@@ -150,13 +175,14 @@ class CancellationOrchestrator:
             evidenceType="provider_demo_api_response"
         )
 
-        task.status = "success"
+        task.status = completed_event.status
         task.result = completed_event
         task.updatedAt = datetime.now(timezone.utc).isoformat()
         self.repo.save_task(task)
 
         # Update subscription state
-        sub.status = SubscriptionStatus.CANCELLED
+        sub.status = (SubscriptionStatus.CANCELLED if provider_status == "cancelled"
+                      else SubscriptionStatus.PENDING_CANCELLATION)
         sub.projectedAnnualSavings = annual_savings
         self.repo.update(sub)
 

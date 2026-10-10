@@ -2,13 +2,17 @@
 
 import os
 from datetime import datetime, timezone
+from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import HTTPException
 
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+
 PROVIDERS = {
-    "netflix": {"subscription_id": "netflix-demo-001", "price_cents": 1599, "category": "entertainment"},
-    "spotify": {"subscription_id": "spotify-demo-001", "price_cents": 1199, "category": "entertainment"},
+    "netflix": {"subscription_id": "netflix-demo-001", "price_cents": 1549, "category": "entertainment"},
+    "spotify": {"subscription_id": "spotify-demo-001", "price_cents": 1099, "category": "entertainment"},
     "canva": {"subscription_id": "canva-demo-001", "price_cents": 1499, "category": "design"},
-    "adobe": {"subscription_id": "adobe-demo-001", "price_cents": 2299, "category": "creative"},
+    "adobe": {"subscription_id": "adobe-demo-001", "price_cents": 5999, "category": "creative"},
 }
 
 

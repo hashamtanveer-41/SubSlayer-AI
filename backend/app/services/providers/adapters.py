@@ -1,7 +1,10 @@
 import uuid
+import os
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Optional
 from app.services.providers.base import BaseProviderAdapter
+from app.demo_common import PROVIDERS
+from app.services.providers.remote import RemoteProviderAdapter
 
 class _InMemoryIdempotencyStore:
     def __init__(self):
@@ -242,8 +245,13 @@ class ProviderAdapterRegistry:
 
     @classmethod
     def get_adapter(cls, provider: str) -> Optional[BaseProviderAdapter]:
-        return cls._adapters.get(provider.lower().strip())
+        name = provider.lower().strip()
+        if name not in PROVIDERS:
+            return None
+        if os.getenv("PROVIDER_MODE", "remote").lower() == "fixture":
+            return cls._adapters[name]
+        return RemoteProviderAdapter(name)
 
     @classmethod
     def is_supported(cls, provider: str) -> bool:
-        return provider.lower().strip() in cls._adapters
+        return provider.lower().strip() in PROVIDERS

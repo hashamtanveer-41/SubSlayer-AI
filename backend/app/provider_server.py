@@ -76,6 +76,16 @@ def get_subscription(subscription_id: str, authorization: str | None = Header(de
         return subscription(db, subscription_id)
 
 
+@app.get("/v1/requests/{provider_request_id}")
+def get_request_status(provider_request_id: str, authorization: str | None = Header(default=None)):
+    require_token(authorization)
+    with connection() as db:
+        row = db.execute("SELECT id FROM subscriptions WHERE provider_request_id=?", (provider_request_id,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "Demo provider request not found")
+        return subscription(db, row["id"])
+
+
 @app.post("/v1/subscriptions/{subscription_id}/cancel")
 def cancel(subscription_id: str, request: CancelRequest, authorization: str | None = Header(default=None)):
     require_token(authorization)
@@ -100,8 +110,9 @@ def cancel(subscription_id: str, request: CancelRequest, authorization: str | No
                        (status, effective, receipt, subscription_id))
         else:
             status, effective, receipt = current["status"], current["effective_at"], current["provider_request_id"]
+        prior_outcome = "already_pending" if current["status"] == "pending" else "already_cancelled"
         result = {"demo": True, "provider": provider(), "subscription_id": subscription_id,
-                  "outcome": "already_cancelled" if current["status"] != "active" else status,
+                  "outcome": prior_outcome if current["status"] != "active" else status,
                   "status": status, "effective_at": effective, "provider_request_id": receipt}
         import json
         db.execute("INSERT INTO operations VALUES (?,?,?,?)", (request.idempotency_key, "cancel", subscription_id, json.dumps(result)))
