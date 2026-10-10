@@ -50,6 +50,14 @@ class CreateSubscriptionRequest(BaseModel):
     renewal: str
 
 
+class UpdateSubscriptionRequest(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    price: Optional[float] = None
+    cycle: Optional[SubscriptionCycle] = None
+    renewal: Optional[str] = None
+
+
 class CancelAgentRequest(BaseModel):
     subscriptionId: str
     provider: str

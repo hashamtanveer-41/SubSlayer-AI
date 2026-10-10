@@ -45,7 +45,7 @@ export function AddEditSubscriptionDialog({
       description={
         editing
           ? "Update details of this subscription for active monitoring."
-          : "Add a service to track costs and enable autonomous cancellation."
+          : "Add a service to track its cost. Cancellation is available for the four supported demo providers."
       }
     >
       <form

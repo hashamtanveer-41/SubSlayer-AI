@@ -71,6 +71,25 @@ export type CancelAgentResponse = {
   streamUrl: string
 }
 
+export type DemoWallet = {
+  demo: true
+  currency: "usd"
+  balance_cents: number
+  charges: Array<{
+    key: string
+    provider: string
+    amount_cents: number
+    status: string
+    stripe_intent_id: string | null
+  }>
+}
+
+export type CancellationTask = {
+  taskId: string
+  status: string
+  result: AgentCompletedEvent | null
+}
+
 export type Page = "landing" | "login" | "signup" | "app"
 
 export type DashboardSection =

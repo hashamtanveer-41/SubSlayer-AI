@@ -11,8 +11,8 @@ export function ControlCard() {
         Autonomous execution.
       </h3>
       <p>
-        SubSlayer acts solely as your authorized agent. Every dark-pattern bypass
-        and cancellation step is logged with verifiable photographic DOM proof.
+        SubSlayer sends a cancellation request only after you authorize it. The
+        demo provider API returns the status and a request receipt.
       </p>
     </section>
   )

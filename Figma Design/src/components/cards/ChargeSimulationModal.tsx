@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   CheckCircle,
   Copy,
@@ -17,18 +17,38 @@ export interface ChargeSimulationModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   card: VirtualCard | null
+  onChargeComplete?: () => void
 }
 
 export function ChargeSimulationModal({
   open,
   onOpenChange,
   card,
+  onChargeComplete,
 }: ChargeSimulationModalProps) {
-  const [chargeAmount, setChargeAmount] = useState<number>(14.99)
+  const [chargeAmount, setChargeAmount] = useState<number>(15.49)
   const [merchantName, setMerchantName] = useState<string>("Netflix")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<SimulateChargeResponse | null>(null)
   const [copiedId, setCopiedId] = useState(false)
+  const [error, setError] = useState("")
+  const attemptKey = useRef("")
+
+  function resetAttempt() {
+    attemptKey.current = ""
+    setResult(null)
+    setError("")
+  }
+
+  useEffect(() => {
+    const label = (card?.label || card?.merchant || "").toLowerCase()
+    const provider = label.includes("adobe") ? "Adobe" : label.includes("canva") ? "Canva" : "Netflix"
+    setMerchantName(provider)
+    setChargeAmount(({ Adobe: 59.99, Canva: 14.99, Netflix: 15.49 } as Record<string, number>)[provider])
+    setResult(null)
+    setError("")
+    attemptKey.current = ""
+  }, [card?.id])
 
   if (!card) return null
 
@@ -37,35 +57,27 @@ export function ChargeSimulationModal({
 
   async function handleSimulate() {
     setLoading(true)
+    setError("")
+    if (!attemptKey.current) attemptKey.current = `sim_${crypto.randomUUID()}`
     try {
       // Call live FastAPI Stripe test endpoint
       const res = await simulateChargeApi(
         card?.id || "card_01",
         chargeAmount,
         merchantName || card?.merchant || card?.label || "Subscription",
+        attemptKey.current,
       )
       setResult(res)
-    } catch (err: any) {
-      // Fallback local calculation if backend is disconnected
-      setResult({
-        success: !isLocked,
-        status: isLocked ? "DECLINED" : "APPROVED",
-        reason: isLocked
-          ? `Blocked by SubSlayer Shield demo policy ($0 balance lock) for ${merchantName}`
-          : `Simulated Stripe authorization succeeded for $${chargeAmount}`,
-        outcomeType: isLocked ? "blocked_by_demo_policy" : "succeeded",
-        stripePaymentIntentId: isLocked ? null : "pi_test_offline_fallback",
-        testMode: true,
-        amountBlocked: isLocked ? chargeAmount : 0.0,
-        timestamp: new Date().toISOString(),
-      })
+      onChargeComplete?.()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Backend payment request failed")
     } finally {
       setLoading(false)
     }
   }
 
   function handleReset() {
-    setResult(null)
+    resetAttempt()
   }
 
   return (
@@ -73,10 +85,10 @@ export function ChargeSimulationModal({
       open={open}
       onOpenChange={(isOpen) => {
         onOpenChange(isOpen)
-        if (!isOpen) setResult(null)
+        if (!isOpen) resetAttempt()
       }}
       title="Stripe Payment Shield Simulator"
-      description="Test live payment interception and $0-balance protection against merchant charges."
+      description="Use Stripe test mode and the local customer demo wallet. No real card or bank charge occurs."
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {/* Card info summary */}
@@ -97,7 +109,7 @@ export function ChargeSimulationModal({
               marginBottom: "6px",
             }}
           >
-            <span>Target Virtual Card:</span>
+              <span>Demo payment policy:</span>
             <strong>
               {card.cardNumberMasked || `•••• ${card.last4 || "4242"}`} (
               {(card.cardBrand || "visa").toUpperCase()})
@@ -113,14 +125,14 @@ export function ChargeSimulationModal({
             <span>Shield Policy Status:</span>
             <strong style={{ color: isLocked ? "#dc2626" : "#16a34a" }}>
               {isLocked
-                ? "LOCKED ($0.00 ZERO-OUT SHIELD)"
+                ? "LOCKED (CHARGES BLOCKED)"
                 : `ACTIVE (${money(card.spendingLimit)} Limit)`}
             </strong>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span>Stripe Customer ID:</span>
+            <span>Demo account label:</span>
             <code style={{ fontSize: "10px", color: "var(--accent)" }}>
-              {card.stripeCustomerId || "cus_test_demo"}
+              {card.stripeCustomerId || "demo_account"}
             </code>
           </div>
         </div>
@@ -143,7 +155,7 @@ export function ChargeSimulationModal({
               value={merchantName}
               onChange={(e) => {
                 setMerchantName(e.target.value)
-                setResult(null)
+                resetAttempt()
               }}
               className="input"
               placeholder="e.g. Netflix, Adobe"
@@ -165,7 +177,7 @@ export function ChargeSimulationModal({
               value={chargeAmount}
               onChange={(e) => {
                 setChargeAmount(Number(e.target.value))
-                setResult(null)
+                resetAttempt()
               }}
               className="input"
               step="0.01"
@@ -175,6 +187,9 @@ export function ChargeSimulationModal({
         </div>
 
         {/* Action Button or Results Display */}
+        {error && <p role="alert" style={{ color: "#b91c1c", fontSize: 12 }}>
+          {error}. No charge has been confirmed.
+        </p>}
         {!result ? (
           <Button
             onClick={handleSimulate}
@@ -305,15 +320,14 @@ export function ChargeSimulationModal({
                 fontWeight: 600,
               }}
             >
-              <span>Impact on Main Bank Account:</span>
+              <span>Customer demo wallet change:</span>
               <strong
                 style={{
                   color:
                     result.status === "DECLINED" ? "#16a34a" : "#dc2626",
                 }}
               >
-                ${(result.status === "DECLINED" ? 0 : chargeAmount).toFixed(2)}{" "}
-                {result.status === "DECLINED" ? "(100% Shielded)" : "(Charged from limit)"}
+                {result.status === "DECLINED" ? "$0.00" : `-${money(chargeAmount)}`}
               </strong>
             </div>
 
@@ -322,7 +336,7 @@ export function ChargeSimulationModal({
               onClick={handleReset}
               style={{ marginTop: "6px" }}
             >
-              Simulate Another Amount
+              Try another test charge
             </Button>
           </div>
         )}

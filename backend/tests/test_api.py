@@ -35,6 +35,17 @@ def test_create_subscription():
     duplicate = client.post("/api/subscriptions", json={**payload, "provider": "netflix", "name": "Netflix Premium", "price": 15.49})
     assert duplicate.status_code == 409
 
+    # The frontend edit dialog persists changes through PATCH, while provider
+    # identity remains bound to the original demo account.
+    changed = client.patch(f"/api/subscriptions/{data['id']}", json={"name": "Updated Subscription", "price": 19.99})
+    assert changed.status_code == 200
+    assert changed.json()["name"] == "Updated Subscription"
+    assert changed.json()["price"] == 19.99
+    assert changed.json()["provider"] == "generic"
+    assert client.patch("/api/subscriptions/missing", json={"name": "No account"}).status_code == 404
+    assert client.patch("/api/subscriptions/sub_01", json={"price": 1.00}).status_code == 400
+    assert client.patch("/api/subscriptions/sub_01", json={"cycle": "Yearly"}).status_code == 400
+
 def test_statement_upload():
     res = client.post("/api/statement/upload", json={"useDemo": True})
     assert res.status_code == 200

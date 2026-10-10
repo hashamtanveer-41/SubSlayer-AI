@@ -38,7 +38,7 @@ export function LiveTerminal({ logs }: LiveTerminalProps) {
         }}
       >
         <Terminal size={13} color="#c9a8d4" />
-        <span>SubSlayer Headless Browser Agent Console</span>
+        <span>SubSlayer Provider API Activity</span>
         <span
           style={{
             marginLeft: "auto",

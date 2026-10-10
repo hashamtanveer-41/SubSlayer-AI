@@ -12,6 +12,10 @@ From `backend/`, start `uvicorn app.main:app --host 0.0.0.0 --port 8000 --worker
 
 Install the same requirements on each device. Configure only `DEMO_SERVICE_TOKEN`, `PROVIDER_NAME`, `PROVIDER_DB_PATH`, and `HUB_API_URL` in that device's environment. Set `PROVIDER_NAME` to exactly one of `netflix`, `spotify`, `canva`, or `adobe`. From `backend/`, start `uvicorn app.provider_server:app --host 0.0.0.0 --port 8101 --workers 1`. All four devices may use port 8101 because their IPs differ. Set the gateway's four `*_API_URL` variables to those four IP/port pairs. Keep the gateway and devices on a trusted LAN/VPN; use HTTPS or a private tunnel across untrusted networks.
 
+## Run the frontend
+
+From `Figma Design/`, run `npm ci` and `npm run dev`. Set `VITE_API_URL=http://GATEWAY_IP:8000` in a local frontend `.env` when the browser runs on another device; the default is `http://127.0.0.1:8000` for a one-computer demo. Add the frontend's exact origin to the gateway's `CORS_ORIGINS` comma-separated list. Restart Vite after changing `VITE_API_URL`. Never put the Stripe, Qwen, or provider service keys in a `VITE_` variable or frontend file. The dashboard loads subscriptions and demo payment policies from the gateway, requests Qwen analysis on demand, and displays provider receipts from the SSE cancellation stream. If the gateway is offline, backend actions are unavailable rather than reporting a local success.
+
 For a one-computer rehearsal, run the gateway on 8000 and four provider processes on 8101–8104. Give each process its own `PROVIDER_NAME` and `PROVIDER_DB_PATH`. Set the gateway's `NETFLIX_API_URL=http://127.0.0.1:8101`, and likewise Spotify 8102, Canva 8103, Adobe 8104. Set every provider process's `HUB_API_URL=http://127.0.0.1:8000/demo`. Environment variables override `.env` values. The gateway and four providers each use one worker because their demo SQLite state uses process-local locks.
 
 ## Verify the flow

@@ -31,25 +31,23 @@ export function FeatureStatement({ navigate }: FeatureStatementProps) {
           <span>actually slays it.</span>
         </h2>
         <p>
-          Passive trackers leave the painful cancellation chore in your lap. SubSlayer
-          employs autonomous Vision-LLM browser agents to log in, evade retention popups,
-          and finish the cancellation so you never have to deal with deceptive UI again.
+          This demo sends cancellation requests to four simulated provider APIs and
+          displays their returned status and receipt. No real platform account changes.
         </p>
         <div className="benefit">
           <ShieldCheck size={19} />
           <div>
-            <strong>Explicit Authorization Guardrails.</strong>
-            <span>The AI only executes when you trigger it. Zero unauthorized cancellations.</span>
+            <strong>Explicit Authorization.</strong>
+            <span>Each demo cancellation requires your confirmation.</span>
           </div>
         </div>
         <div className="benefit">
           <Zap size={19} />
           <div>
-            <strong>The Privacy.com Virtual Card Shield.</strong>
+            <strong>Stripe Test Payment Shield.</strong>
             <span>
-              For gyms and stubborn providers that make online cancellation impossible,
-              our $0 Balance virtual cards block unauthorized recurring charges before
-              they ever touch your bank account.
+              Lock a demo payment policy to block a test charge, or unlock it to see
+              the separate customer demo wallet decrease after a Stripe test payment.
             </span>
           </div>
         </div>

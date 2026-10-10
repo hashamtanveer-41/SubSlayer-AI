@@ -2,6 +2,8 @@ import type {
   AgentCompletedEvent,
   AgentStepEvent,
   CancelAgentResponse,
+  CancellationTask,
+  DemoWallet,
   SimulateChargeResponse,
   Subscription,
   VirtualCard,
@@ -15,6 +17,11 @@ export type ApiHealth = {
   service: string
   version: string
   stripeMode: string
+}
+
+async function responseError(res: Response): Promise<Error> {
+  const body = await res.json().catch(() => null)
+  return new Error(typeof body?.detail === "string" ? body.detail : `Backend request failed (HTTP ${res.status})`)
 }
 
 // 1. Health check
@@ -40,9 +47,7 @@ export async function getVirtualCards(): Promise<VirtualCard[]> {
   return cards.map((c: any) => ({
     ...c,
     merchant: c.label || c.merchant || "Subscription",
-    cardNumberMasked: `•••• •••• •••• ${c.last4 || "4242"}`,
-    exp: c.exp || "12/28",
-    cvv: c.cvv || "312",
+    cardNumberMasked: `DEMO •••• ${c.last4 || "4242"}`,
     balanceLocked: c.demoPolicyLocked ?? (c.status === "locked"),
   }))
 }
@@ -63,9 +68,7 @@ export async function toggleCardLockApi(
   return {
     ...c,
     merchant: c.label || c.merchant || "Subscription",
-    cardNumberMasked: `•••• •••• •••• ${c.last4 || "4242"}`,
-    exp: c.exp || "12/28",
-    cvv: c.cvv || "312",
+    cardNumberMasked: `DEMO •••• ${c.last4 || "4242"}`,
     balanceLocked: c.demoPolicyLocked ?? (c.status === "locked"),
   }
 }
@@ -74,8 +77,8 @@ export async function simulateChargeApi(
   cardId: string,
   amount: number,
   merchant: string,
+  idempotencyKey: string,
 ): Promise<SimulateChargeResponse> {
-  const idempotencyKey = `sim_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
   const res = await fetch(`${API_BASE_URL}/api/cards/simulate-charge`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -87,7 +90,7 @@ export async function simulateChargeApi(
     }),
   })
   if (!res.ok) {
-    throw new Error(`Failed to simulate charge: ${res.statusText}`)
+    throw await responseError(res)
   }
   return await res.json()
 }
@@ -101,12 +104,62 @@ export async function getSubscriptionsApi(): Promise<Subscription[]> {
   return await res.json()
 }
 
+export async function saveSubscriptionApi(sub: Subscription, editing: boolean): Promise<Subscription> {
+  const payload = { name: sub.name, category: sub.category, price: sub.price,
+    cycle: sub.cycle, renewal: sub.renewal, provider: sub.provider || "generic" }
+  const res = await fetch(`${API_BASE_URL}/api/subscriptions${editing ? `/${sub.id}` : ""}`, {
+    method: editing ? "PATCH" : "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw await responseError(res)
+  return await res.json()
+}
+
+export async function getDemoWalletApi(): Promise<DemoWallet> {
+  const res = await fetch(`${API_BASE_URL}/api/demo-wallet`)
+  if (!res.ok) throw await responseError(res)
+  return await res.json()
+}
+
+export async function analyzeSubscriptionApi(sub: Subscription): Promise<string> {
+  const res = await fetch(`${API_BASE_URL}/api/ai/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      provider: sub.provider,
+      monthly_cost_cents: Math.round((sub.cycle === "Yearly" ? sub.price / 12 : sub.price) * 100),
+      category: sub.category,
+      user_note: "",
+    }),
+  })
+  if (!res.ok) throw await responseError(res)
+  const result = await res.json()
+  const raw = result.analysis
+  if (typeof raw !== "string") throw new Error("Qwen returned an invalid analysis")
+  try {
+    const parsed = JSON.parse(raw)
+    if (typeof parsed.reason === "string") {
+      return `${parsed.reason} (estimated risk ${parsed.risk_score ?? "?"}/100)`
+    }
+  } catch {
+    // A textual model response can still be shown as advisory text.
+  }
+  return raw
+}
+
+export async function getCancellationTaskApi(taskId: string): Promise<CancellationTask> {
+  const res = await fetch(`${API_BASE_URL}/api/agent/tasks/${taskId}`)
+  if (!res.ok) throw await responseError(res)
+  return await res.json()
+}
+
 // 4. Autonomous Agent Cancellation
 export async function startCancellationAgentApi(
   subscriptionId: string,
-  provider: string = "generic",
+  provider: string,
+  idempotencyKey: string,
 ): Promise<CancelAgentResponse> {
-  const idempotencyKey = `cancel_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
   const res = await fetch(`${API_BASE_URL}/api/agent/cancel`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -118,7 +171,7 @@ export async function startCancellationAgentApi(
     }),
   })
   if (!res.ok) {
-    throw new Error(`Cancellation trigger failed: ${res.statusText}`)
+    throw await responseError(res)
   }
   return await res.json()
 }
@@ -128,7 +181,7 @@ export function subscribeToAgentStream(
   callbacks: {
     onStep: (event: AgentStepEvent) => void
     onComplete: (event: AgentCompletedEvent) => void
-    onError?: (err: any) => void
+    onError?: (message: string) => void
   },
 ): () => void {
   const sseUrl = `${API_BASE_URL}/api/agent/stream/${taskId}`
@@ -154,8 +207,16 @@ export function subscribeToAgentStream(
     }
   })
 
-  eventSource.onerror = (err) => {
-    if (callbacks.onError) callbacks.onError(err)
+  eventSource.onerror = (event) => {
+    let message = "Provider stream disconnected; checking task status."
+    if (event instanceof MessageEvent && event.data) {
+      try {
+        message = JSON.parse(event.data).error || message
+      } catch {
+        message = String(event.data)
+      }
+    }
+    callbacks.onError?.(message)
     eventSource.close()
   }
 

@@ -93,8 +93,8 @@ export function Sidebar({
           <span className="agent-symbol">
             <Sparkles size={20} />
           </span>
-          <strong>AI Assassin Standing By.</strong>
-          <p>Ready to deploy browser agents to auto-cancel vampire subscriptions.</p>
+          <strong>Demo Provider APIs Ready.</strong>
+          <p>Request cancellation through Netflix, Spotify, Canva, or Adobe demo services.</p>
           <Button
             variant="secondary"
             onClick={() => {

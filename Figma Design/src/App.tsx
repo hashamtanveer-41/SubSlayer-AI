@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import { Auth } from "./components/auth/Auth"
 import { Dashboard } from "./components/dashboard/Dashboard"
 import { Landing } from "./components/landing/Landing"
-import { seedSubscriptions, seedVirtualCards } from "./data/seedData"
 import type { Page, Subscription, VirtualCard } from "./types"
 import { readStored } from "./utils/formatters"
 
@@ -14,37 +13,14 @@ export default function App() {
 
   const [page, setPage] = useState<Page>(initialPage)
   const [name, setName] = useState(() => readStored("subslayer-name", "Alex"))
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>(() =>
-    readStored("subslayer-subscriptions-v2", seedSubscriptions),
-  )
-  const [virtualCards, setVirtualCards] = useState<VirtualCard[]>(() =>
-    readStored("subslayer-cards-v2", seedVirtualCards),
-  )
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+  const [virtualCards, setVirtualCards] = useState<VirtualCard[]>([])
 
   useEffect(() => {
     const listener = () => setPage(initialPage())
     window.addEventListener("hashchange", listener)
     return () => window.removeEventListener("hashchange", listener)
   }, [])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "subslayer-subscriptions-v2",
-        JSON.stringify(subscriptions),
-      )
-    } catch {
-      /* Safe fallback */
-    }
-  }, [subscriptions])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("subslayer-cards-v2", JSON.stringify(virtualCards))
-    } catch {
-      /* Safe fallback */
-    }
-  }, [virtualCards])
 
   function navigate(p: Page) {
     window.location.hash = p === "landing" ? "" : p
@@ -62,11 +38,6 @@ export default function App() {
     navigate("app")
   }
 
-  function resetSeedData() {
-    setSubscriptions(seedSubscriptions)
-    setVirtualCards(seedVirtualCards)
-  }
-
   if (page === "app") {
     return (
       <Dashboard
@@ -75,7 +46,6 @@ export default function App() {
         setSubscriptions={setSubscriptions}
         virtualCards={virtualCards}
         setVirtualCards={setVirtualCards}
-        onResetSeedData={resetSeedData}
         logout={() => navigate("landing")}
       />
     )

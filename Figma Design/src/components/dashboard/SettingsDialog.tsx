@@ -1,17 +1,13 @@
-import { RotateCcw } from "lucide-react"
-import { Button } from "../ui/Button"
 import { Dialog } from "../ui/Dialog"
 
 export interface SettingsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onResetData: () => void
 }
 
 export function SettingsDialog({
   open,
   onOpenChange,
-  onResetData,
 }: SettingsDialogProps) {
   return (
     <Dialog
@@ -23,7 +19,7 @@ export function SettingsDialog({
       <div className="settings-content">
         <div>
           <strong>AI Agent Engine</strong>
-          <span>Vision-LLM Browser-Use Engine (Local / Stagehand / Playwright)</span>
+          <span>Qwen3.8 Flash analysis and four demo provider APIs</span>
         </div>
         <div>
           <strong>Display Currency</strong>
@@ -33,13 +29,7 @@ export function SettingsDialog({
           <strong>Zero-Knowledge Security</strong>
           <span>No bank passwords or unmasked card PANs are stored in this demo</span>
         </div>
-        <Button
-          variant="secondary"
-          onClick={onResetData}
-        >
-          <RotateCcw size={16} />
-          Reset to default seed data
-        </Button>
+        <p>Subscription and payment state comes from the local FastAPI demo backend.</p>
       </div>
     </Dialog>
   )

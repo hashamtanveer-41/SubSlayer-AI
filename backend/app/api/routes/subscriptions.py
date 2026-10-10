@@ -1,7 +1,7 @@
 import uuid
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-from app.domain.models import Subscription, CreateSubscriptionRequest, SubscriptionStatus
+from app.domain.models import Subscription, CreateSubscriptionRequest, UpdateSubscriptionRequest, SubscriptionStatus, SubscriptionCycle
 from app.api.deps import get_subscription_repo
 from app.services.repository import SubscriptionRepository
 from app.services.intelligence.vampire_scorer import VampireScorer
@@ -25,6 +25,8 @@ async def create_subscription(
             raise HTTPException(status_code=409, detail="This demo provider account is already in the dashboard")
         if round(req.price * 100) != fixture["price_cents"]:
             raise HTTPException(status_code=400, detail="Price must match the demo provider plan")
+        if req.cycle != SubscriptionCycle.MONTHLY:
+            raise HTTPException(status_code=400, detail="Demo provider plans bill monthly")
     vampire_score, _ = VampireScorer.evaluate(req.name, req.category, req.price, req.cycle)
     sub = Subscription(
         id=f"sub_{uuid.uuid4().hex[:6]}",
@@ -42,3 +44,20 @@ async def create_subscription(
         tone=provider if provider in PROVIDERS else "neutral",
     )
     return repo.add(sub)
+
+
+@router.patch("/{subscription_id}", response_model=Subscription)
+async def update_subscription(subscription_id: str, req: UpdateSubscriptionRequest,
+                              repo: SubscriptionRepository = Depends(get_subscription_repo)):
+    sub = repo.get_by_id(subscription_id)
+    if sub is None:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    changes = req.model_dump(exclude_unset=True, exclude_none=True)
+    if "price" in changes and sub.provider in PROVIDERS:
+        if round(changes["price"] * 100) != PROVIDERS[sub.provider]["price_cents"]:
+            raise HTTPException(status_code=400, detail="Price must match the demo provider plan")
+    if sub.provider in PROVIDERS and changes.get("cycle", SubscriptionCycle.MONTHLY) != SubscriptionCycle.MONTHLY:
+        raise HTTPException(status_code=400, detail="Demo provider plans bill monthly")
+    updated = sub.model_copy(update=changes)
+    repo.update(updated)
+    return updated

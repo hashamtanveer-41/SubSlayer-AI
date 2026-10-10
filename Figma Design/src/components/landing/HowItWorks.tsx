@@ -15,9 +15,9 @@ export function HowItWorks() {
           </h2>
         </div>
         <p>
-          No more calling customer support.
+          Explore a connected demo without real provider accounts.
           <br />
-          No more clicking through 8 pages of discount bribes.
+          Four simulated provider APIs return clear outcomes.
         </p>
       </div>
       <div className="steps">
@@ -28,8 +28,8 @@ export function HowItWorks() {
           </div>
           <h3>Ingest & Uncover.</h3>
           <p>
-            Upload your statement or sync transactions. Our AI scans for forgotten,
-            price-hiked, and unused vampire subscriptions.
+            Review demo subscriptions and upload a sample statement to inspect
+            recurring costs.
           </p>
           <div className="step-visual connect-visual">
             {seedSubscriptions.slice(0, 4).map((s) => (
@@ -71,26 +71,26 @@ export function HowItWorks() {
             <span>03 / SLAY & SHIELD</span>
             <Sparkles size={22} />
           </div>
-          <h3>Autonomous Cancellation.</h3>
+          <h3>Provider API Cancellation.</h3>
           <p>
-            Hit "Cancel via AI". Our headless browser agent bypasses dark retention
-            patterns, cancels the plan, and delivers photographic proof.
+            Confirm a request to the selected demo provider API and follow its
+            response in the live status stream.
           </p>
           <div className="step-visual unloop-visual">
             <span className="agent-symbol">
               <Sparkles size={18} />
             </span>
             <div>
-              <strong>Auto-cancelled in seconds.</strong>
-              <span>Proof screenshot captured.</span>
+              <strong>Provider request recorded.</strong>
+              <span>Receipt and status returned.</span>
             </div>
             <Check size={18} />
           </div>
         </article>
       </div>
       <div className="demo-disclosure">
-        <CircleHelp size={14} /> Hackathon demo preview connects to simulated
-        or live headless AI agent sessions with photographic DOM verification.
+        <CircleHelp size={14} /> Hackathon demo uses simulated provider APIs,
+        Qwen3.8 Flash analysis, and Stripe test-mode payments.
       </div>
     </section>
   )

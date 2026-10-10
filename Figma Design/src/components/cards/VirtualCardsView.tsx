@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react"
 import {
   Lock,
-  Plus,
   RefreshCw,
   ShieldCheck,
   Unlock,
   Zap,
 } from "lucide-react"
-import { getApiHealth, getVirtualCards } from "../../services/api"
-import type { VirtualCard } from "../../types"
+import { getApiHealth, getDemoWalletApi, getVirtualCards } from "../../services/api"
+import type { DemoWallet, VirtualCard } from "../../types"
 import { money } from "../../utils/formatters"
 import { Button } from "../ui/Button"
 import { ChargeSimulationModal } from "./ChargeSimulationModal"
@@ -17,31 +16,30 @@ import { VirtualCardVisual } from "./VirtualCardVisual"
 export interface VirtualCardsViewProps {
   cards: VirtualCard[]
   onToggleLock: (cardId: string) => void
-  onAddCard: (card: VirtualCard) => void
-  onUpdateLimit: (cardId: string, limit: number) => void
   onSyncBackendCards?: (cards: VirtualCard[]) => void
 }
 
 export function VirtualCardsView({
   cards,
   onToggleLock,
-  onAddCard,
   onSyncBackendCards,
 }: VirtualCardsViewProps) {
   const [testCard, setTestCard] = useState<VirtualCard | null>(null)
   const [simulatorOpen, setSimulatorOpen] = useState(false)
   const [backendStatus, setBackendStatus] = useState<string>("Checking backend...")
   const [syncing, setSyncing] = useState(false)
+  const [wallet, setWallet] = useState<DemoWallet | null>(null)
 
   // Check backend health & Stripe test mode on mount
   useEffect(() => {
     async function checkHealth() {
       const health = await getApiHealth()
       if (health) {
-        setBackendStatus(`Stripe Gateway Live (${health.service})`)
+        setBackendStatus(health.stripeMode === "test" ? "Stripe test mode connected" : "Stripe test key unavailable")
       } else {
-        setBackendStatus("Running in Local Demo Mode")
+        setBackendStatus("Backend unavailable")
       }
+      try { setWallet(await getDemoWalletApi()) } catch { setWallet(null) }
     }
     checkHealth()
   }, [])
@@ -54,33 +52,12 @@ export function VirtualCardsView({
       if (onSyncBackendCards && liveCards.length > 0) {
         onSyncBackendCards(liveCards)
       }
+      setWallet(await getDemoWalletApi())
     } catch (err) {
       console.warn("Could not sync live cards:", err)
     } finally {
       setSyncing(false)
     }
-  }
-
-  function createNewCard() {
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000)
-    const newCard: VirtualCard = {
-      id: `card_${Date.now()}`,
-      label: "New Subscription / Trial",
-      merchant: "New Subscription / Trial",
-      cardNumberMasked: `•••• •••• •••• ${randomSuffix}`,
-      last4: String(randomSuffix),
-      cardBrand: "visa",
-      exp: "12/29",
-      cvv: String(Math.floor(100 + Math.random() * 900)),
-      spendingLimit: 25.0,
-      balanceLocked: false,
-      demoPolicyLocked: false,
-      status: "active",
-      testMode: true,
-      stripeCustomerId: `cus_test_${randomSuffix}`,
-      paymentMethodId: `pm_card_${randomSuffix}`,
-    }
-    onAddCard(newCard)
   }
 
   return (
@@ -144,7 +121,7 @@ export function VirtualCardsView({
               color: "var(--color-ink)",
             }}
           >
-            Zero-Out Balance Virtual Cards
+            Demo Payment Shield
           </h2>
           <p
             style={{
@@ -154,10 +131,12 @@ export function VirtualCardsView({
               margin: 0,
             }}
           >
-            When a merchant makes cancellation difficult or locks you in,
-            switch your virtual card policy to <strong>$0.00 Balance Shield</strong>.
-            Incoming Stripe charge attempts are blocked by our demo policy before
-            ever reaching your bank account.
+            A locked demo card blocks a test charge before Stripe. An unlocked test charge
+            uses Stripe test mode and decreases the separate customer demo wallet.
+            No bank account or real virtual card is involved.
+          </p>
+          <p style={{ marginTop: 10, fontWeight: 700 }}>
+            Customer demo wallet: {wallet ? money(wallet.balance_cents / 100) : "Unavailable"}
           </p>
         </div>
 
@@ -169,11 +148,8 @@ export function VirtualCardsView({
             style={{ gap: "6px" }}
           >
             <RefreshCw size={14} className={syncing ? "spinning" : ""} />
-            Sync Stripe API
-          </Button>
-          <Button onClick={createNewCard} style={{ gap: "8px" }}>
-            <Plus size={16} /> Generate Virtual Card
-          </Button>
+              Refresh demo state
+            </Button>
         </div>
       </div>
 
@@ -278,6 +254,7 @@ export function VirtualCardsView({
         open={simulatorOpen}
         onOpenChange={setSimulatorOpen}
         card={testCard}
+        onChargeComplete={handleRefreshBackend}
       />
     </div>
   )

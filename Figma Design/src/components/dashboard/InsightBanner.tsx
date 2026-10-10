@@ -6,9 +6,13 @@ import { Button } from "../ui/Button"
 export interface InsightBannerProps {
   active: Subscription[]
   onOpenCancel: (sub: Subscription) => void
+  onAnalyze: (sub: Subscription) => void
+  analyzing: boolean
+  backendReady: boolean
+  insight: string
 }
 
-export function InsightBanner({ active, onOpenCancel }: InsightBannerProps) {
+export function InsightBanner({ active, onOpenCancel, onAnalyze, analyzing, backendReady, insight }: InsightBannerProps) {
   const topSub = active.length
     ? [...active].sort((a, b) => monthly(b) - monthly(a))[0]
     : null
@@ -22,16 +26,21 @@ export function InsightBanner({ active, onOpenCancel }: InsightBannerProps) {
         <strong>Vampire Subscription Alert.</strong>
         <p>
           {topSub
-            ? `${topSub.name} ($${topSub.price}/${topSub.cycle.toLowerCase()}) is your largest recurring cost. SubSlayer agent is primed to cancel it autonomously.`
-            : "All detected vampire subscriptions have been slayed. Add a subscription whenever you need."}
+            ? `${topSub.name} ($${topSub.price}/${topSub.cycle.toLowerCase()}) is the largest supported recurring cost. Request a Qwen demo analysis or contact its provider API.`
+            : "No active supported demo subscriptions are available."}
         </p>
+        {insight && <p role="status" style={{ whiteSpace: "pre-wrap", marginTop: 8 }}>Qwen demo analysis: {insight}</p>}
       </div>
+      <Button variant="secondary" disabled={!topSub || !backendReady || analyzing}
+        onClick={() => topSub && onAnalyze(topSub)}>
+        {analyzing ? "Analyzing..." : "Analyze with Qwen"}
+      </Button>
       <Button
         variant="secondary"
-        disabled={!topSub}
+        disabled={!topSub || !backendReady}
         onClick={() => topSub && onOpenCancel(topSub)}
       >
-        Auto-Cancel with AI <ArrowUpRight size={16} />
+        Request cancellation <ArrowUpRight size={16} />
       </Button>
     </div>
   )

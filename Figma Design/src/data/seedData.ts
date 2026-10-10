@@ -138,18 +138,18 @@ export const seedVirtualCards: VirtualCard[] = [
 export const landingFaqs: [string, string][] = [
   [
     "How does SubSlayer AI cancel subscriptions for me?",
-    "SubSlayer deploys an autonomous Vision-LLM browser agent. Using secure pre-authenticated session tokens, the agent navigates the target website, identifies dark patterns (like hidden links and retention discount popups), and completes the cancellation—saving you time and frustration.",
+    "In this demo, SubSlayer sends a confirmed request to a simulated Netflix, Spotify, Canva, or Adobe API and shows its returned status and receipt. It does not change a real platform account.",
   ],
   [
-    "What is the Privacy.com-style Virtual Card Shield?",
-    "For stubborn subscriptions that make cancellation difficult or require a phone call, SubSlayer lets you generate on-demand virtual cards. You can toggle the balance to $0.00 at any time. When the merchant attempts to bill you, the charge is rejected immediately without touching your real bank account.",
+    "What is the Stripe test payment shield?",
+    "The demo lets you lock a local payment policy before a test charge. Unlocked charges use Stripe test mode and decrease a separate customer demo wallet. No real virtual card or bank account is involved.",
   ],
   [
     "Do you store or ask for my real bank passwords?",
-    "Never. Our planned production architecture relies on standard bank read-only APIs or local browser session cookies. You maintain full control, and every automated action requires your explicit permission.",
+    "No. This demo uses simulated provider accounts, a local wallet, and Stripe test mode. Every cancellation request requires your confirmation.",
   ],
   [
     "Can I try this demo right now without connecting an account?",
-    "Yes! You can explore the full demo workspace, add and edit subscriptions, watch the AI cancellation simulation in real-time, and test the virtual card balance shield simulator.",
+    "Yes. Start the backend and four demo provider services, then explore provider cancellation, Qwen analysis, and Stripe test charges from the dashboard.",
   ],
 ]

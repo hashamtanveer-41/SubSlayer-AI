@@ -52,13 +52,13 @@ export function StatGrid({ spend, savings, active, cancelled }: StatGridProps) {
         <span className="stat-note">
           {active.some((s) => (s.vampireScore || 0) > 70)
             ? "⚠️ High vampire-score subscriptions detected"
-            : "All monitored by autonomous agent"}
+            : "Review supported demo providers"}
         </span>
       </article>
 
       <article className="stat-card savings-card">
         <div>
-          <span>Money Slayed & Reclaimed</span>
+        <span>Demo Cancellation Savings</span>
           <Sparkles size={18} />
         </div>
         <strong>
@@ -67,8 +67,8 @@ export function StatGrid({ spend, savings, active, cancelled }: StatGridProps) {
         </strong>
         <span className="stat-note">
           {cancelled.length
-            ? `${money(savings * 12)} in verified annualized savings`
-            : "Trigger an AI cancellation to reclaim cash"}
+            ? `${money(savings * 12)} in projected annualized savings`
+            : "Request a demo provider cancellation to see projected savings"}
         </span>
         <span className="savings-decoration">↗</span>
       </article>

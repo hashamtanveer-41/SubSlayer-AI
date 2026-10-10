@@ -1,8 +1,6 @@
 import {
   ArrowUpRight,
-  Camera,
   ListFilter,
-  RotateCcw,
   Search,
   ShieldCheck,
   SlidersHorizontal,
@@ -24,8 +22,7 @@ export interface SubscriptionsTableProps {
   setCategory: (c: string) => void
   onEdit: (sub: Subscription) => void
   onOpenCancel: (sub: Subscription) => void
-  onRestore: (sub: Subscription) => void
-  onViewProof?: (sub: Subscription) => void
+  backendReady: boolean
 }
 
 export function SubscriptionsTable({
@@ -38,8 +35,7 @@ export function SubscriptionsTable({
   setCategory,
   onEdit,
   onOpenCancel,
-  onRestore,
-  onViewProof,
+  backendReady,
 }: SubscriptionsTableProps) {
   const isHistory = section === "Cancellation history"
 
@@ -48,13 +44,13 @@ export function SubscriptionsTable({
       <div className="panel-heading">
         <div>
           <h2>
-            {isHistory ? "Slayed Subscriptions" : "Active Recurring Subscriptions"}
+            {isHistory ? "Cancellation Requests" : "Active Recurring Subscriptions"}
             <span>{visible.length}</span>
           </h2>
           <p>
             {isHistory
-              ? "Photographic proof and annualized cash reclaimed."
-              : "Review services and trigger autonomous AI cancellation."}
+              ? "Demo provider status and projected savings."
+              : "Review services and request cancellation through a demo API."}
           </p>
         </div>
         <div className="table-controls">
@@ -125,12 +121,10 @@ export function SubscriptionsTable({
                 <td>{formatDate(s.renewal)}</td>
                 <td>
                   <span
-                    className={`status-pill ${
-                      s.status === "Cancelled" ? "cancelled" : ""
-                    }`}
+                    className={`status-pill ${s.status === "Cancelled" ? "cancelled" : ""}`}
                   >
                     <span />
-                    {s.status === "Cancelled" ? "Slayed" : "Active"}
+                    {s.status === "Cancelled" ? "Cancelled" : s.status === "Pending Cancellation" ? "Pending" : "Active"}
                   </span>
                 </td>
                 <td>
@@ -164,6 +158,7 @@ export function SubscriptionsTable({
                         <Button
                           variant="ghost"
                           onClick={() => onEdit(s)}
+                          disabled={!backendReady}
                           aria-label={`Edit ${s.name}`}
                         >
                           <SlidersHorizontal size={15} />
@@ -171,6 +166,7 @@ export function SubscriptionsTable({
                         <Button
                           variant="ghost"
                           onClick={() => onOpenCancel(s)}
+                          disabled={!backendReady || !["netflix", "spotify", "canva", "adobe"].includes(s.provider || "")}
                           style={{
                             color: "var(--accent)",
                             fontWeight: 600,
@@ -178,28 +174,11 @@ export function SubscriptionsTable({
                           }}
                         >
                           <Sparkles size={13} />
-                          Auto-Cancel <ArrowUpRight size={14} />
+                          Request cancel <ArrowUpRight size={14} />
                         </Button>
                       </>
                     ) : (
-                      <div style={{ display: "flex", gap: "6px" }}>
-                        {s.proofScreenshotUrl && onViewProof && (
-                          <Button
-                            variant="ghost"
-                            onClick={() => onViewProof(s)}
-                            style={{ gap: "4px" }}
-                          >
-                            <Camera size={13} /> Proof
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          onClick={() => onRestore(s)}
-                          style={{ gap: "4px" }}
-                        >
-                          <RotateCcw size={14} /> Restore
-                        </Button>
-                      </div>
+                      <span>{s.status === "Pending Cancellation" ? "Awaiting provider" : "Demo receipt recorded"}</span>
                     )}
                   </div>
                 </td>
@@ -214,13 +193,13 @@ export function SubscriptionsTable({
           <Search size={28} />
           <h3>
             {isHistory
-              ? "No slayed subscriptions yet."
+              ? "No cancellation requests yet."
               : "No subscriptions found in this view."}
           </h3>
           <p>
             {search || category !== "All categories"
               ? "Try adjusting your search query or category filter."
-              : "Click 'Auto-Cancel' on an active subscription to watch the AI in action."}
+               : "Choose a supported demo provider to request cancellation."}
           </p>
         </div>
       )}
