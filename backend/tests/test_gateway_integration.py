@@ -19,18 +19,20 @@ from app.services.repository import SubscriptionRepository
 class GatewayIntegrationTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
+        temp_db = os.path.join(self.temp.name, "subslayer.sqlite3")
         self.env = patch.dict(os.environ, {
             "DEMO_SERVICE_TOKEN": "gateway-test-token", "STRIPE_SECRET_KEY": "sk_test_fake",
             "QWEN_API_KEY": "test-qwen-key", "PROVIDER_MODE": "remote", "PROVIDER_NAME": "canva",
             "CANVA_API_URL": "http://canva.local", "HUB_DB_PATH": os.path.join(self.temp.name, "hub.sqlite3"),
             "PROVIDER_DB_PATH": os.path.join(self.temp.name, "canva.sqlite3"),
             "DEMO_WALLET_START_CENTS": "10000",
+            "DB_PATH": temp_db,
         })
         self.env.start()
-        repo = SubscriptionRepository()
+        repo = SubscriptionRepository(db_path=temp_db)
         app.dependency_overrides[get_subscription_repo] = lambda: repo
         app.dependency_overrides[get_orchestrator] = lambda: CancellationOrchestrator(repo)
-        app.dependency_overrides[get_stripe_service] = StripePaymentShieldService
+        app.dependency_overrides[get_stripe_service] = lambda: StripePaymentShieldService(db_path=temp_db)
         self.client = TestClient(app)
 
     def tearDown(self):
@@ -60,8 +62,13 @@ class GatewayIntegrationTests(unittest.TestCase):
                 "idempotencyKey": "gateway-canva-cancel-001"})
             self.assertEqual(duplicate.json()["taskId"], task_id)
             stream = self.client.get(f"/api/agent/stream/{task_id}")
+            refreshed = self.client.get("/api/subscriptions?refresh=true")
         self.assertEqual(stream.status_code, 200)
         self.assertIn("event: agent_completed", stream.text)
+        self.assertEqual(refreshed.status_code, 200)
+        live_sub = next(row for row in refreshed.json() if row["id"] == "sub_02")
+        self.assertEqual(live_sub["status"], "Cancelled")
+        self.assertTrue(live_sub["providerRequestId"])
         sub = next(row for row in self.client.get("/api/subscriptions").json() if row["id"] == "sub_02")
         self.assertEqual(sub["status"], "Cancelled")
         self.assertEqual(provider_client.get("/v1/subscriptions/canva-demo-001",

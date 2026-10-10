@@ -36,6 +36,8 @@ class Subscription(BaseModel):
     provider: str = "generic"
     providerSubscriptionId: Optional[str] = None
     latestCancellationTaskId: Optional[str] = None
+    providerRequestId: Optional[str] = None
+    cancellationEffectiveDate: Optional[str] = None
     mark: Optional[str] = None
     tone: Optional[str] = None
     projectedAnnualSavings: Optional[float] = None
@@ -48,6 +50,14 @@ class CreateSubscriptionRequest(BaseModel):
     price: float
     cycle: SubscriptionCycle = SubscriptionCycle.MONTHLY
     renewal: str
+
+
+class UpdateSubscriptionRequest(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    price: Optional[float] = None
+    cycle: Optional[SubscriptionCycle] = None
+    renewal: Optional[str] = None
 
 
 class CancelAgentRequest(BaseModel):
@@ -90,6 +100,7 @@ class CancellationTask(BaseModel):
     status: str = "queued"
     steps: List[AgentStepEvent] = []
     result: Optional[AgentCompletedEvent] = None
+    errorMessage: Optional[str] = None
     createdAt: str
     updatedAt: str
 

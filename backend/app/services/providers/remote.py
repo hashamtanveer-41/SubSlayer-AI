@@ -40,7 +40,8 @@ class RemoteProviderAdapter(BaseProviderAdapter):
     async def lookup_subscription(self, provider_sub_id: str) -> dict[str, Any]:
         data = await self._request("GET", f"/v1/subscriptions/{quote(provider_sub_id, safe='')}")
         return {"provider": self._name, "providerSubscriptionId": data["subscription_id"],
-                "status": data["status"], "currentPeriodEnd": data.get("effective_at")}
+                "status": data["status"], "currentPeriodEnd": data.get("effective_at"),
+                "providerRequestId": data.get("provider_request_id")}
 
     async def request_cancellation(self, provider_sub_id: str, idempotency_key: str,
                                    context: Optional[dict[str, Any]] = None) -> dict[str, Any]:

@@ -6,9 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Load environment variables from .env
 env_path = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
+load_dotenv(dotenv_path=env_path, override=True)
 
-from app.api.routes import subscriptions, agent, cards, statement, demo
+from app.api.routes import subscriptions, agent, cards, statement, demo, auth
 from app import demo_hub
 
 app = FastAPI(
@@ -31,6 +31,7 @@ app.add_middleware(
 )
 
 # Include Routers
+app.include_router(auth.router)
 app.include_router(subscriptions.router)
 app.include_router(agent.router)
 app.include_router(cards.router)

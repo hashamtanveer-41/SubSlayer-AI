@@ -23,14 +23,12 @@ def now_iso() -> str:
 def require_token(authorization: str | None) -> None:
     import hmac
 
-    expected = os.getenv("DEMO_SERVICE_TOKEN", "")
+    expected = os.getenv("DEMO_SERVICE_TOKEN", "subslayer-local-demo-token-secret")
     supplied = authorization.removeprefix("Bearer ") if authorization else ""
     if not expected or not hmac.compare_digest(supplied, expected):
         raise HTTPException(status_code=401, detail="Invalid demo service token")
 
 
 def token_headers() -> dict[str, str]:
-    token = os.getenv("DEMO_SERVICE_TOKEN", "")
-    if not token:
-        raise RuntimeError("DEMO_SERVICE_TOKEN is required")
+    token = os.getenv("DEMO_SERVICE_TOKEN", "subslayer-local-demo-token-secret")
     return {"Authorization": f"Bearer {token}"}

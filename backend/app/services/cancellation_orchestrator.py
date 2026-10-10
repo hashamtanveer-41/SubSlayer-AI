@@ -23,6 +23,7 @@ class CancellationOrchestrator:
 
     def __init__(self, repository):
         self.repo = repository
+        self._running_tasks: dict[str, asyncio.Task] = {}
 
     def queue_cancellation(
         self,
@@ -92,6 +93,60 @@ class CancellationOrchestrator:
         if task.result is not None:
             yield f"event: agent_completed\ndata: {task.result.model_dump_json()}\n\n"
             return
+        if task.status == "failed":
+            yield f"event: error\ndata: {json.dumps({'error': task.errorMessage or 'Provider request failed'})}\n\n"
+            return
+
+        worker = self._running_tasks.get(task_id)
+        if worker is None:
+            worker = asyncio.create_task(self._drive_task(task_id))
+            self._running_tasks[task_id] = worker
+
+        sent_steps = 0
+        while True:
+            current = self.repo.get_task(task_id)
+            if current is None:
+                yield f"event: error\ndata: {json.dumps({'error': 'Task not found'})}\n\n"
+                return
+            while sent_steps < len(current.steps):
+                step = current.steps[sent_steps]
+                sent_steps += 1
+                yield f"event: agent_step\ndata: {step.model_dump_json()}\n\n"
+            if current.result is not None:
+                yield f"event: agent_completed\ndata: {current.result.model_dump_json()}\n\n"
+                return
+            if current.status == "failed":
+                yield f"event: error\ndata: {json.dumps({'error': current.errorMessage or 'Provider request failed', 'taskId': task_id})}\n\n"
+                return
+            await asyncio.wait({worker}, timeout=0.1)
+
+    async def _drive_task(self, task_id: str) -> None:
+        try:
+            async for _ in self._execute_cancellation_task(task_id):
+                pass
+        except Exception:
+            task = self.repo.get_task(task_id)
+            if task and task.result is None:
+                task.status = "failed"
+                task.errorMessage = "Agent execution failed before provider confirmation"
+                task.updatedAt = datetime.now(timezone.utc).isoformat()
+                self.repo.save_task(task)
+        finally:
+            task = self.repo.get_task(task_id)
+            if task and task.result is None and task.status != "failed":
+                task.status = "failed"
+                task.errorMessage = "Provider request stopped without a result"
+                task.updatedAt = datetime.now(timezone.utc).isoformat()
+                self.repo.save_task(task)
+
+    async def _execute_cancellation_task(self, task_id: str) -> AsyncGenerator[str, None]:
+        task = self.repo.get_task(task_id)
+        if not task:
+            yield f"event: error\ndata: {json.dumps({'error': 'Task not found'})}\n\n"
+            return
+        if task.result is not None:
+            yield f"event: agent_completed\ndata: {task.result.model_dump_json()}\n\n"
+            return
 
         sub = self.repo.get_by_id(task.subscriptionId)
         if not sub:
@@ -139,6 +194,7 @@ class CancellationOrchestrator:
             )
         except ProviderUnavailable as exc:
             task.status = "failed"
+            task.errorMessage = str(exc)
             task.updatedAt = datetime.now(timezone.utc).isoformat()
             self.repo.save_task(task)
             sub.status = SubscriptionStatus.ACTIVE
@@ -184,6 +240,8 @@ class CancellationOrchestrator:
         sub.status = (SubscriptionStatus.CANCELLED if provider_status == "cancelled"
                       else SubscriptionStatus.PENDING_CANCELLATION)
         sub.projectedAnnualSavings = annual_savings
+        sub.providerRequestId = completed_event.providerRequestId
+        sub.cancellationEffectiveDate = completed_event.effectiveDate
         self.repo.update(sub)
 
         yield f"event: agent_completed\ndata: {completed_event.model_dump_json()}\n\n"
