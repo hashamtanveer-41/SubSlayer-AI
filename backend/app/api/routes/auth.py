@@ -175,7 +175,7 @@ async def change_password(
 
 # Google OAuth Endpoints
 @router.get("/google/config", response_model=GoogleConfigResponse)
-async def get_google_config(request: Request):
+async def get_google_config(request: Request, origin: str | None = Query(None)):
     client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
     configured = bool(client_id)
     host = request.headers.get("host", "127.0.0.1:8000")
@@ -184,6 +184,7 @@ async def get_google_config(request: Request):
 
     auth_url = None
     if configured:
+        frontend_state = origin or request.headers.get("referer", "").split("/#")[0].rstrip("/") or _frontend_url()
         params = {
             "client_id": client_id,
             "redirect_uri": callback_url,
@@ -191,6 +192,7 @@ async def get_google_config(request: Request):
             "scope": "openid email profile",
             "access_type": "offline",
             "prompt": "consent",
+            "state": frontend_state,
         }
         auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
 
@@ -217,6 +219,7 @@ async def google_auth(
     email = None
     name = None
     google_id = None
+    avatar = None
 
     if req.credential:
         # Validate ID token with Google's tokeninfo endpoint
@@ -234,6 +237,7 @@ async def google_auth(
             email = data.get("email")
             name = data.get("name") or data.get("given_name") or (email.split("@")[0] if email else "Google User")
             google_id = data.get("sub")
+            avatar = data.get("picture")
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -250,6 +254,7 @@ async def google_auth(
         name=name,
         oauth_id=google_id,
         provider="google",
+        avatar=avatar,
     )
     session_id = auth_service.create_session(user.id)
     _set_session_cookie(response, session_id)
@@ -266,6 +271,7 @@ async def google_auth(
 async def google_callback(
     request: Request,
     code: str = Query(...),
+    state: str | None = Query(None),
     auth_service: AuthService = Depends(get_auth_service),
 ):
     client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
@@ -313,18 +319,28 @@ async def google_callback(
         email = user_data.get("email")
         name = user_data.get("name") or (email.split("@")[0] if email else "Google User")
         google_id = user_data.get("sub")
+        avatar = user_data.get("picture")
 
         if not email or not google_id:
             raise ValueError("Incomplete Google user profile")
 
-        user = auth_service.get_or_create_oauth_user(email=email, name=name, oauth_id=google_id, provider="google")
+        user = auth_service.get_or_create_oauth_user(
+            email=email,
+            name=name,
+            oauth_id=google_id,
+            provider="google",
+            avatar=avatar,
+        )
         session_id = auth_service.create_session(user.id)
 
-        frontend_dest = f"{_frontend_url()}/#app?session_id={session_id}"
+        target_host = state if (state and state.startswith("http")) else _frontend_url()
+        frontend_dest = f"{target_host.rstrip('/')}/#app?session_id={session_id}"
         redirect_response = RedirectResponse(url=frontend_dest, status_code=status.HTTP_302_FOUND)
         _set_session_cookie(redirect_response, session_id)
         return redirect_response
 
     except Exception as e:
-        error_url = f"{_frontend_url()}/#login?error={urllib.parse.quote(str(e))}"
+        target_host = state if (state and state.startswith("http")) else _frontend_url()
+        error_url = f"{target_host.rstrip('/')}/#login?error={urllib.parse.quote(str(e))}"
         return RedirectResponse(url=error_url, status_code=status.HTTP_302_FOUND)
+

@@ -73,6 +73,15 @@ export type CancelAgentResponse = {
 
 export type Page = "landing" | "login" | "signup" | "app"
 
+export type User = {
+  id: string
+  email: string
+  name: string
+  createdAt?: string
+  provider?: "password" | "google" | string
+  avatar?: string | null
+}
+
 export type DashboardSection =
   | "Overview"
   | "Subscriptions"

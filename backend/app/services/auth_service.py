@@ -52,9 +52,14 @@ class AuthService:
                     password_hash TEXT NOT NULL,
                     salt TEXT NOT NULL,
                     created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL
+                    updated_at TEXT NOT NULL,
+                    avatar TEXT
                 );
             """)
+            try:
+                conn.execute("ALTER TABLE users ADD COLUMN avatar TEXT;")
+            except Exception:
+                pass
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS sessions (
                     session_id TEXT PRIMARY KEY,
@@ -180,33 +185,43 @@ class AuthService:
         name: str,
         oauth_id: str,
         provider: str = "google",
+        avatar: Optional[str] = None,
     ) -> UserProfile:
         normalized_email = email.lower().strip()
         now = datetime.now(timezone.utc).isoformat()
         with self._connection() as conn:
             row = conn.execute("SELECT * FROM users WHERE email = ?", (normalized_email,)).fetchone()
             if row:
+                stored_avatar = row["avatar"] if "avatar" in row.keys() else None
+                if avatar and avatar != stored_avatar:
+                    try:
+                        conn.execute("UPDATE users SET avatar = ? WHERE id = ?", (avatar, row["id"]))
+                        stored_avatar = avatar
+                    except Exception:
+                        pass
                 return UserProfile(
                     id=row["id"],
                     email=row["email"],
                     name=row["name"],
                     createdAt=row["created_at"],
                     provider="google" if (row["password_hash"] or "").startswith("oauth_") else "password",
+                    avatar=stored_avatar or avatar,
                 )
             user_id = f"usr_{secrets.token_hex(8)}"
             salt = secrets.token_hex(16)
             pwd_hash = f"oauth_{provider}_{oauth_id}"
             user_name = name.strip() or normalized_email.split("@")[0]
             conn.execute("""
-                INSERT INTO users (id, email, name, password_hash, salt, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (user_id, normalized_email, user_name, pwd_hash, salt, now, now))
+                INSERT INTO users (id, email, name, password_hash, salt, created_at, updated_at, avatar)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (user_id, normalized_email, user_name, pwd_hash, salt, now, now, avatar))
             return UserProfile(
                 id=user_id,
                 email=normalized_email,
                 name=user_name,
                 createdAt=now,
                 provider=provider,
+                avatar=avatar,
             )
 
     def create_session(self, user_id: str, days: int = 7) -> str:
@@ -226,7 +241,7 @@ class AuthService:
         now_str = datetime.now(timezone.utc).isoformat()
         with self._connection() as conn:
             row = conn.execute("""
-                SELECT u.id, u.email, u.name, u.password_hash, u.created_at, s.expires_at
+                SELECT u.id, u.email, u.name, u.password_hash, u.created_at, u.avatar, s.expires_at
                 FROM sessions s
                 JOIN users u ON s.user_id = u.id
                 WHERE s.session_id = ? AND s.expires_at > ?
@@ -239,6 +254,7 @@ class AuthService:
                 name=row["name"],
                 createdAt=row["created_at"],
                 provider="google" if (row["password_hash"] or "").startswith("oauth_") else "password",
+                avatar=row["avatar"] if "avatar" in row.keys() else None,
             )
 
     def delete_session(self, session_id: str) -> None:
@@ -266,6 +282,7 @@ class AuthService:
                 name=row["name"],
                 createdAt=row["created_at"],
                 provider="google" if (row["password_hash"] or "").startswith("oauth_") else "password",
+                avatar=row["avatar"] if "avatar" in row.keys() else None,
             )
 
     def change_password(

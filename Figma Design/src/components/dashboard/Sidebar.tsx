@@ -7,12 +7,13 @@ import {
   Shield,
   SlidersHorizontal,
 } from "lucide-react"
-import type { DashboardSection } from "../../types"
+import type { DashboardSection, User } from "../../types"
 import { Brand } from "../common/Brand"
 import { Button } from "../ui/Button"
 
 export interface SidebarProps {
   name: string
+  user?: User | null
   section: DashboardSection
   setSection: (s: DashboardSection) => void
   sidebarOpen: boolean
@@ -25,6 +26,7 @@ export interface SidebarProps {
 
 export function Sidebar({
   name,
+  user,
   section,
   setSection,
   sidebarOpen,
@@ -87,12 +89,24 @@ export function Sidebar({
             <span className="nav-label-text">How Agent Works</span>
           </Button>
           <div className="sidebar-profile">
-            <span className="profile-avatar" title={name}>
-              {name.charAt(0).toUpperCase()}
-            </span>
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={name}
+                referrerPolicy="no-referrer"
+                className="profile-avatar"
+                style={{ objectFit: "cover", width: "36px", height: "36px", borderRadius: "50%" }}
+              />
+            ) : (
+              <span className="profile-avatar" title={name}>
+                {name.charAt(0).toUpperCase()}
+              </span>
+            )}
             <div className="sidebar-profile-info">
               <strong>{name}</strong>
-              <span>Demo Account</span>
+              <span style={{ fontSize: "11px", opacity: 0.85, overflow: "hidden", textOverflow: "ellipsis", maxWidth: "120px" }}>
+                {user?.email || "Demo Account"}
+              </span>
             </div>
             <Button variant="ghost" aria-label="Log out" title="Log out" onClick={logout} className="logout-button">
               <LogOut size={17} />

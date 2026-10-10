@@ -8,6 +8,7 @@ class UserProfile(BaseModel):
     name: str
     createdAt: str
     provider: Optional[str] = "password"
+    avatar: Optional[str] = None
 
 
 class SignUpRequest(BaseModel):

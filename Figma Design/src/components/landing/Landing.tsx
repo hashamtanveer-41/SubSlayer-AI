@@ -1,4 +1,4 @@
-import type { Page } from "../../types"
+import type { Page, User } from "../../types"
 import { ClosingCTA } from "./ClosingCTA"
 import { FAQSection } from "./FAQSection"
 import { FeatureStatement } from "./FeatureStatement"
@@ -10,12 +10,14 @@ import { ProviderStrip } from "./ProviderStrip"
 
 export interface LandingProps {
   navigate: (p: Page) => void
+  currentUser?: User | null
+  onLogout?: () => void
 }
 
-export function Landing({ navigate }: LandingProps) {
+export function Landing({ navigate, currentUser, onLogout }: LandingProps) {
   return (
     <div className="landing">
-      <LandingHeader navigate={navigate} />
+      <LandingHeader navigate={navigate} currentUser={currentUser} onLogout={onLogout} />
       <main>
         <LandingHero navigate={navigate} />
         <ProviderStrip />

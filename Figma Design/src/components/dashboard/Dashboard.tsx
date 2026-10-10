@@ -5,7 +5,7 @@ import {
   getVirtualCards,
   toggleCardLockApi,
 } from "../../services/api"
-import type { DashboardSection, Subscription, VirtualCard } from "../../types"
+import type { DashboardSection, Subscription, User, VirtualCard } from "../../types"
 import { monthly } from "../../utils/formatters"
 import { AgentExecutionModal } from "../agent/AgentExecutionModal"
 import { VirtualCardsView } from "../cards/VirtualCardsView"
@@ -24,6 +24,7 @@ import { UpcomingRenewalsCard } from "./UpcomingRenewalsCard"
 
 export interface DashboardProps {
   name: string
+  user?: User | null
   subscriptions: Subscription[]
   setSubscriptions: (subs: Subscription[]) => void
   virtualCards: VirtualCard[]
@@ -34,6 +35,7 @@ export interface DashboardProps {
 
 export function Dashboard({
   name,
+  user,
   subscriptions,
   setSubscriptions,
   virtualCards,
@@ -150,8 +152,8 @@ export function Dashboard({
 
     try {
       const updated = await toggleCardLockApi(cardId, newLocked)
-      setVirtualCards((prev) =>
-        prev.map((c) => (c.id === cardId ? updated : c)),
+      setVirtualCards(
+        virtualCards.map((c) => (c.id === cardId ? updated : c)),
       )
     } catch {
       // Local fallback
@@ -181,6 +183,7 @@ export function Dashboard({
     <div className="dashboard">
       <Sidebar
         name={name}
+        user={user}
         section={section}
         setSection={setSection}
         sidebarOpen={sidebarOpen}
@@ -196,6 +199,7 @@ export function Dashboard({
       <div className="dashboard-main">
         <DashboardHeader
           name={name}
+          user={user}
           section={section}
           onToggleSidebar={() => setSidebarOpen(true)}
           onOpenRenewals={() => setRenewalsOpen(true)}
