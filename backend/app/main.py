@@ -17,14 +17,27 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS for frontend Vite dev servers; never combine credentials with a wildcard origin.
+# Configure CORS for frontend dev servers and production deployments.
+default_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8443",
+    "http://127.0.0.1:8443",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://subslayer-ai.vercel.app",
+]
+env_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
+cors_allowed_origins = list(dict.fromkeys(default_origins + env_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in os.getenv(
-        "CORS_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8443,"
-        "http://127.0.0.1:8443,http://localhost:3000,http://127.0.0.1:3000",
-    ).split(",") if origin.strip()],
+    allow_origins=cors_allowed_origins,
+    allow_origin_regex=r"^https:\/\/([a-zA-Z0-9_-]+\.)?vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

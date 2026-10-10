@@ -26,31 +26,44 @@ COOKIE_PATH = "/"
 
 
 def _is_cookie_secure() -> bool:
-    return os.getenv("COOKIE_SECURE", "false").lower() == "true"
+    if os.getenv("COOKIE_SECURE") is not None:
+        return os.getenv("COOKIE_SECURE", "").lower() == "true"
+    return bool(os.getenv("RENDER") or os.getenv("VERCEL") or os.getenv("ENV") == "production")
+
+
+def _cookie_samesite() -> str:
+    val = os.getenv("COOKIE_SAMESITE")
+    if val:
+        return val.lower()
+    return "none" if _is_cookie_secure() else "lax"
 
 
 def _frontend_url() -> str:
-    return os.getenv("FRONTEND_URL", "http://localhost:8443").rstrip("/")
+    return os.getenv("FRONTEND_URL", "https://subslayer-ai.vercel.app" if os.getenv("RENDER") else "http://localhost:8443").rstrip("/")
 
 
 def _set_session_cookie(response: Response, session_id: str) -> None:
+    is_secure = _is_cookie_secure()
+    samesite = _cookie_samesite()
     response.set_cookie(
         key=COOKIE_NAME,
         value=session_id,
         max_age=COOKIE_MAX_AGE,
         httponly=True,
-        samesite=COOKIE_SAMESITE,
-        secure=_is_cookie_secure(),
+        samesite=samesite,
+        secure=is_secure,
         path=COOKIE_PATH,
     )
 
 
 def _clear_session_cookie(response: Response) -> None:
+    is_secure = _is_cookie_secure()
+    samesite = _cookie_samesite()
     response.delete_cookie(
         key=COOKIE_NAME,
         path=COOKIE_PATH,
-        samesite=COOKIE_SAMESITE,
-        secure=_is_cookie_secure(),
+        samesite=samesite,
+        secure=is_secure,
     )
 
 
@@ -179,7 +192,8 @@ async def get_google_config(request: Request, origin: str | None = Query(None)):
     client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
     configured = bool(client_id)
     host = request.headers.get("host", "127.0.0.1:8000")
-    default_callback = f"http://{host}/api/auth/google/callback"
+    proto = request.headers.get("x-forwarded-proto") or ("http" if "127.0.0.1" in host or "localhost" in host else "https")
+    default_callback = f"{proto}://{host}/api/auth/google/callback"
     callback_url = os.getenv("GOOGLE_REDIRECT_URI") or default_callback
 
     auth_url = None
@@ -277,7 +291,8 @@ async def google_callback(
     client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
     client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "").strip()
     host = request.headers.get("host", "127.0.0.1:8000")
-    default_callback = f"http://{host}/api/auth/google/callback"
+    proto = request.headers.get("x-forwarded-proto") or ("http" if "127.0.0.1" in host or "localhost" in host else "https")
+    default_callback = f"{proto}://{host}/api/auth/google/callback"
     redirect_uri = os.getenv("GOOGLE_REDIRECT_URI") or default_callback
 
     if not client_id or not client_secret:
