@@ -4,10 +4,14 @@ import {
   ArrowLeft,
   Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   ExternalLink,
   Flame,
+  Globe,
   HelpCircle,
   Lock,
+  Music,
   Music2,
   RefreshCw,
   Shield,
@@ -15,9 +19,10 @@ import {
   ShieldCheck,
   Sparkles,
   Unlock,
-  Volume2,
+  User,
   X,
 } from "lucide-react"
+
 import type { Page, Subscription, VirtualCard } from "../../types"
 import {
   getVirtualCards,
@@ -27,7 +32,7 @@ import {
   updateSubscriptionApi,
   type SimulateChargeResponse,
 } from "../../services/api"
-import { SpotifyLogo } from "../common/PlatformLogos"
+import { SpotifyLogo, SpotifyWordmark } from "../common/PlatformLogos"
 
 export interface SpotifyDemoPortalProps {
   onNavigate: (page: Page) => void
@@ -38,15 +43,6 @@ export interface SpotifyDemoPortalProps {
   onCardUpdated?: (card: VirtualCard) => void
 }
 
-interface ChargeHistoryItem {
-  id: string
-  timestamp: string
-  amount: number
-  status: "APPROVED" | "DECLINED"
-  reason: string
-  paymentIntentId?: string | null
-}
-
 export function SpotifyDemoPortal({
   onNavigate,
   onOpenSplit,
@@ -55,7 +51,6 @@ export function SpotifyDemoPortal({
   virtualCard,
   onCardUpdated,
 }: SpotifyDemoPortalProps) {
-  // Local states
   const [subStatus, setSubStatus] = useState<"Active" | "Cancelled" | "Pending Cancellation">(
     currentSubscription?.status || "Active",
   )
@@ -64,11 +59,11 @@ export function SpotifyDemoPortal({
   const [togglingLock, setTogglingLock] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [chargeResult, setChargeResult] = useState<SimulateChargeResponse | null>(null)
-  const [chargeHistory, setChargeHistory] = useState<ChargeHistoryItem[]>([])
   const [agentTriggering, setAgentTriggering] = useState(false)
   const [agentSuccessMsg, setAgentSuccessMsg] = useState<string | null>(null)
+  const [activeSidebarItem, setActiveSidebarItem] = useState("overview")
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
 
-  // Fetch or synchronize live card and sub
   useEffect(() => {
     if (currentSubscription) {
       setSubStatus(currentSubscription.status)
@@ -107,16 +102,6 @@ export function SpotifyDemoPortal({
     try {
       const res = await simulateChargeApi(cardId, 10.99, "Spotify")
       setChargeResult(res)
-
-      const historyEntry: ChargeHistoryItem = {
-        id: `ch_${Date.now()}`,
-        timestamp: new Date().toLocaleTimeString(),
-        amount: 10.99,
-        status: res.status,
-        reason: res.reason,
-        paymentIntentId: res.stripePaymentIntentId,
-      }
-      setChargeHistory((prev) => [historyEntry, ...prev.slice(0, 4)])
     } catch (err: any) {
       setChargeResult({
         success: false,
@@ -142,7 +127,6 @@ export function SpotifyDemoPortal({
       setCard(updated)
       onCardUpdated?.(updated)
     } catch {
-      // Local fallback
       const fallback: VirtualCard = {
         ...card,
         demoPolicyLocked: newLockState,
@@ -204,47 +188,41 @@ export function SpotifyDemoPortal({
         minHeight: "100vh",
         background: "#121212",
         color: "#ffffff",
-        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Circular Std', 'DM Sans', Roboto, Helvetica, Arial, sans-serif",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      {/* 1. SubSlayer Top Sandbox Navigation Banner */}
+      {/* 1. SubSlayer Demo Floating Controller (Non-intrusive) */}
       <div
         style={{
-          background: "linear-gradient(90deg, #1f1424 0%, #2f1d35 50%, #17111a 100%)",
-          borderBottom: "1px solid #4a2d4e",
-          padding: "10px 24px",
+          background: "#1e1422",
+          borderBottom: "1px solid #3d2342",
+          padding: "8px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "12px",
-          fontSize: "13px",
+          fontSize: "12px",
           position: "sticky",
           top: 0,
-          zIndex: 100,
+          zIndex: 1000,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span
             style={{
               background: "#1ed760",
               color: "#000",
               fontWeight: 800,
               fontSize: "10px",
-              padding: "3px 7px",
+              padding: "2px 6px",
               borderRadius: "4px",
-              letterSpacing: "0.5px",
             }}
           >
-            LIVE SANDBOX
+            DEMO
           </span>
-          <span style={{ fontWeight: 650, color: "#f3e8f5" }}>
-            Spotify Provider Account Simulator
-          </span>
-          <span style={{ color: "#a592aa", fontSize: "12px" }}>
-            • Linked to SubSlayer Virtual Card Shield (•••• 4242)
+          <span style={{ color: "#eedef0", fontWeight: 600 }}>
+            Simulated Spotify Environment • Linked to SubSlayer Virtual Card Shield (•••• 4242)
           </span>
         </div>
 
@@ -253,20 +231,17 @@ export function SpotifyDemoPortal({
             <button
               onClick={onOpenSplit}
               style={{
-                background: "rgba(255,255,255,0.1)",
-                color: "#fff",
+                background: "rgba(255,255,255,0.08)",
                 border: "1px solid rgba(255,255,255,0.2)",
-                padding: "6px 12px",
-                borderRadius: "6px",
-                fontSize: "12px",
-                fontWeight: 600,
+                color: "#fff",
+                padding: "4px 10px",
+                borderRadius: "4px",
                 cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
+                fontSize: "11.5px",
+                fontWeight: 600,
               }}
             >
-              ◫ Split Sandbox Mode
+              ◫ Split Screen
             </button>
           )}
 
@@ -274,13 +249,13 @@ export function SpotifyDemoPortal({
             onClick={() => onNavigate("demo-adobe")}
             style={{
               background: "rgba(250, 15, 0, 0.15)",
-              color: "#ff8b82",
               border: "1px solid rgba(250, 15, 0, 0.35)",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 600,
+              color: "#ff9da2",
+              padding: "4px 10px",
+              borderRadius: "4px",
               cursor: "pointer",
+              fontSize: "11.5px",
+              fontWeight: 600,
             }}
           >
             Switch to Adobe Demo →
@@ -290,399 +265,615 @@ export function SpotifyDemoPortal({
             onClick={() => onNavigate("app")}
             style={{
               background: "#704b73",
-              color: "#fff",
               border: "none",
-              padding: "6px 14px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 650,
+              color: "#fff",
+              padding: "4px 12px",
+              borderRadius: "4px",
               cursor: "pointer",
+              fontSize: "11.5px",
+              fontWeight: 700,
               display: "flex",
               alignItems: "center",
-              gap: "6px",
+              gap: "4px",
             }}
           >
-            <ArrowLeft size={14} /> Back to SubSlayer Hub
+            <ArrowLeft size={12} /> SubSlayer Hub
           </button>
         </div>
       </div>
 
-      {/* 2. Official Spotify Account Header */}
+      {/* 2. Official Spotify Account Header (accounts.spotify.com) */}
       <header
         style={{
           background: "#000000",
-          borderBottom: "1px solid #282828",
-          padding: "16px 36px",
+          height: "80px",
+          padding: "0 40px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          borderBottom: "1px solid #1c1c1c",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <SpotifyLogo size={36} />
-          <span
-            style={{
-              fontSize: "22px",
-              fontWeight: 800,
-              letterSpacing: "-0.5px",
-              color: "#ffffff",
-            }}
-          >
-            Spotify
-          </span>
-          <span
-            style={{
-              fontSize: "11px",
-              fontWeight: 700,
-              color: "#b3b3b3",
-              background: "#282828",
-              padding: "2px 8px",
-              borderRadius: "12px",
-              marginLeft: "6px",
-            }}
-          >
-            ACCOUNT PORTAL
-          </span>
-        </div>
+        <SpotifyWordmark height={38} />
 
-        <nav style={{ display: "flex", alignItems: "center", gap: "28px", fontSize: "14px", fontWeight: 700 }}>
-          <span style={{ color: "#ffffff", cursor: "pointer" }}>Premium</span>
-          <span style={{ color: "#b3b3b3", cursor: "pointer" }}>Support</span>
-          <span style={{ color: "#b3b3b3", cursor: "pointer" }}>Download</span>
-          <div
+        <nav style={{ display: "flex", alignItems: "center", gap: "32px" }}>
+          <span
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: "#282828",
-              padding: "4px 12px 4px 6px",
-              borderRadius: "20px",
-              fontSize: "13px",
+              color: "#ffffff",
+              fontSize: "16px",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "color 0.15s",
             }}
+            onMouseOver={(e) => (e.currentTarget.style.color = "#1ed760")}
+            onMouseOut={(e) => (e.currentTarget.style.color = "#ffffff")}
           >
-            <div
+            Premium
+          </span>
+          <span
+            style={{
+              color: "#ffffff",
+              fontSize: "16px",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "color 0.15s",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.color = "#1ed760")}
+            onMouseOut={(e) => (e.currentTarget.style.color = "#ffffff")}
+          >
+            Support
+          </span>
+          <span
+            style={{
+              color: "#ffffff",
+              fontSize: "16px",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "color 0.15s",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.color = "#1ed760")}
+            onMouseOut={(e) => (e.currentTarget.style.color = "#ffffff")}
+          >
+            Download
+          </span>
+
+          <div style={{ width: "1px", height: "18px", background: "#404040" }} />
+
+          {/* User Profile Pill */}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
               style={{
-                width: "24px",
-                height: "24px",
-                borderRadius: "50%",
-                background: "#1ed760",
-                color: "#000",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 800,
-                fontSize: "11px",
+                gap: "10px",
+                background: "transparent",
+                border: "none",
+                color: "#ffffff",
+                cursor: "pointer",
+                padding: "6px 8px",
               }}
             >
-              A
-            </div>
-            <span>Alex River</span>
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  background: "#282828",
+                  color: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                }}
+              >
+                <User size={18} />
+              </div>
+              <span style={{ fontSize: "15px", fontWeight: 700 }}>Profile</span>
+              <ChevronDown size={14} />
+            </button>
+
+            {profileDropdownOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: 0,
+                  width: "180px",
+                  background: "#282828",
+                  borderRadius: "4px",
+                  padding: "6px 0",
+                  boxShadow: "0 10px 24px rgba(0,0,0,0.5)",
+                  zIndex: 200,
+                }}
+              >
+                <div style={{ padding: "8px 16px", fontSize: "14px", fontWeight: 650, color: "#fff" }}>
+                  Alex River
+                </div>
+                <div style={{ height: "1px", background: "#3e3e3e", margin: "4px 0" }} />
+                <button
+                  onClick={() => setProfileDropdownOpen(false)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 16px",
+                    textAlign: "left",
+                    background: "none",
+                    border: "none",
+                    color: "#b3b3b3",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.color = "#fff")}
+                  onMouseOut={(e) => (e.currentTarget.style.color = "#b3b3b3")}
+                >
+                  Account
+                </button>
+                <button
+                  onClick={() => onNavigate("app")}
+                  style={{
+                    width: "100%",
+                    padding: "8px 16px",
+                    textAlign: "left",
+                    background: "none",
+                    border: "none",
+                    color: "#b3b3b3",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.color = "#fff")}
+                  onMouseOut={(e) => (e.currentTarget.style.color = "#b3b3b3")}
+                >
+                  Log out
+                </button>
+              </div>
+            )}
           </div>
         </nav>
       </header>
 
-      {/* 3. Main Spotify Account Body */}
-      <main
+      {/* 3. Main Body Container (accounts.spotify.com 2-column layout) */}
+      <div
         style={{
-          maxWidth: "1000px",
+          maxWidth: "1170px",
           width: "100%",
           margin: "0 auto",
-          padding: "40px 24px",
+          padding: "48px 24px",
           flex: 1,
+          display: "grid",
+          gridTemplateColumns: "250px 1fr",
+          gap: "48px",
+          alignItems: "start",
         }}
       >
-        {/* Banner notification if slayed by SubSlayer */}
-        {(subStatus === "Cancelled" || agentSuccessMsg) && (
+        {/* Left Sidebar: Official Spotify Account Navigation */}
+        <aside style={{ display: "grid", gap: "24px" }}>
+          {/* User profile tile */}
           <div
             style={{
-              background: "linear-gradient(135deg, rgba(112, 75, 115, 0.25) 0%, rgba(30, 215, 96, 0.15) 100%)",
-              border: "1px solid #1ed760",
-              borderRadius: "12px",
-              padding: "16px 20px",
-              marginBottom: "28px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              gap: "16px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <div
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: "#1ed760",
-                  color: "#000",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Sparkles size={18} />
-              </div>
-              <div>
-                <strong style={{ fontSize: "15px", color: "#ffffff", display: "block" }}>
-                  Autonomous Agent Slay Verified
-                </strong>
-                <span style={{ fontSize: "13px", color: "#d2c7d4" }}>
-                  {agentSuccessMsg ||
-                    "SubSlayer AI orchestrated this cancellation via the Spotify API. Your Premium plan will end on June 26, 2026 without renewal charges."}
-                </span>
-              </div>
-            </div>
-            <span
-              style={{
-                fontSize: "12px",
-                fontWeight: 700,
-                background: "#1ed760",
-                color: "#000",
-                padding: "4px 10px",
-                borderRadius: "20px",
-                whiteSpace: "nowrap",
-              }}
-            >
-              FREE TIER PENDING
-            </span>
-          </div>
-        )}
-
-        <div style={{ marginBottom: "28px" }}>
-          <h1 style={{ fontSize: "32px", fontWeight: 800, margin: 0, letterSpacing: "-0.5px" }}>
-            Account overview
-          </h1>
-          <p style={{ color: "#b3b3b3", fontSize: "14.5px", marginTop: "6px" }}>
-            Manage your Spotify subscription, linked SubSlayer burner card, and billing cycles.
-          </p>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.4fr 1fr",
-            gap: "24px",
-            alignItems: "start",
-          }}
-        >
-          {/* Left Column: Your Plan Card */}
-          <div
-            style={{
-              background: "#181818",
-              borderRadius: "12px",
-              border: "1px solid #282828",
-              padding: "28px",
+              gap: "14px",
+              paddingBottom: "20px",
+              borderBottom: "1px solid #282828",
             }}
           >
             <div
               style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                background: "#282828",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "20px",
+                justifyContent: "center",
+                color: "#1ed760",
+                fontSize: "20px",
+                fontWeight: 800,
               }}
             >
-              <span
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  letterSpacing: "1px",
-                  color: "#1ed760",
-                  textTransform: "uppercase",
-                }}
-              >
-                CURRENT SUBSCRIPTION
-              </span>
-              <span
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  padding: "3px 10px",
-                  borderRadius: "12px",
-                  background: subStatus === "Active" ? "rgba(30, 215, 96, 0.2)" : "rgba(239, 68, 68, 0.2)",
-                  color: subStatus === "Active" ? "#1ed760" : "#f87171",
-                  border: `1px solid ${subStatus === "Active" ? "#1ed760" : "#ef4444"}`,
-                }}
-              >
-                {subStatus === "Active" ? "ACTIVE" : "CANCELLATION SCHEDULED"}
+              A
+            </div>
+            <div>
+              <strong style={{ fontSize: "16px", display: "block", color: "#ffffff" }}>
+                Alex River
+              </strong>
+              <span style={{ fontSize: "12px", color: subStatus === "Active" ? "#1ed760" : "#a7a7a7" }}>
+                {subStatus === "Active" ? "Premium Individual" : "Free Plan"}
               </span>
             </div>
+          </div>
 
-            <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "8px" }}>
-              <h2 style={{ fontSize: "26px", fontWeight: 800, margin: 0 }}>Spotify Premium</h2>
-              <span style={{ fontSize: "14px", color: "#b3b3b3" }}>Individual</span>
-            </div>
+          {/* Navigation Menu Links */}
+          <nav style={{ display: "grid", gap: "4px" }}>
+            {[
+              { id: "overview", label: "Account overview" },
+              { id: "edit-profile", label: "Edit profile" },
+              { id: "change-password", label: "Change password" },
+              { id: "notification", label: "Notification settings" },
+              { id: "privacy", label: "Privacy settings" },
+              { id: "recover", label: "Recover playlists" },
+              { id: "receipts", label: "Receipts" },
+              { id: "apps", label: "Apps" },
+              { id: "redeem", label: "Redeem" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSidebarItem(item.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "11px 16px",
+                  borderRadius: "4px",
+                  border: "none",
+                  textAlign: "left",
+                  fontSize: "14px",
+                  fontWeight: activeSidebarItem === item.id ? 700 : 500,
+                  cursor: "pointer",
+                  background: activeSidebarItem === item.id ? "#282828" : "transparent",
+                  color: activeSidebarItem === item.id ? "#ffffff" : "#a7a7a7",
+                  borderLeft:
+                    activeSidebarItem === item.id ? "4px solid #1ed760" : "4px solid transparent",
+                  transition: "all 0.15s",
+                }}
+                onMouseOver={(e) => {
+                  if (activeSidebarItem !== item.id) {
+                    e.currentTarget.style.color = "#ffffff"
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (activeSidebarItem !== item.id) {
+                    e.currentTarget.style.color = "#a7a7a7"
+                  }
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </aside>
 
-            <p style={{ color: "#ffffff", fontSize: "20px", fontWeight: 700, margin: "0 0 16px 0" }}>
-              $10.99{" "}
-              <span style={{ fontSize: "14px", fontWeight: 500, color: "#b3b3b3" }}>
-                / month
-              </span>
-            </p>
-
-            <div
+        {/* Right Main Content Panel: Account Overview */}
+        <main style={{ display: "grid", gap: "48px" }}>
+          <div>
+            <h1
               style={{
-                background: "#242424",
-                borderRadius: "8px",
-                padding: "14px 16px",
-                marginBottom: "24px",
-                fontSize: "13.5px",
-                color: "#e0e0e0",
-                lineHeight: 1.6,
+                fontSize: "40px",
+                fontWeight: 900,
+                letterSpacing: "-1px",
+                margin: "0 0 32px 0",
+                color: "#ffffff",
               }}
             >
-              {subStatus === "Active" ? (
-                <>
-                  Next scheduled billing date: <strong>June 26, 2026</strong>. Auto-renews unless cancelled.
-                </>
-              ) : (
-                <>
-                  Your Premium benefits remain active until <strong>June 26, 2026</strong>. You will not be charged again.
-                </>
-              )}
-            </div>
+              Account overview
+            </h1>
 
-            {/* Premium Perks Checklist */}
-            <div style={{ marginBottom: "28px" }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#b3b3b3", textTransform: "uppercase" }}>
-                Included with your plan
-              </span>
-              <ul
+            {/* Slayed Announcement Banner */}
+            {(subStatus === "Cancelled" || agentSuccessMsg) && (
+              <div
                 style={{
-                  listStyle: "none",
-                  padding: 0,
-                  margin: "12px 0 0 0",
-                  display: "grid",
-                  gap: "10px",
-                  fontSize: "13.5px",
+                  background: "linear-gradient(135deg, rgba(30, 215, 96, 0.15) 0%, rgba(112, 75, 115, 0.25) 100%)",
+                  border: "1.5px solid #1ed760",
+                  borderRadius: "8px",
+                  padding: "20px 24px",
+                  marginBottom: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "16px",
                 }}
               >
-                <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <Check size={16} color="#1ed760" /> Ad-free music listening on all devices
-                </li>
-                <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <Check size={16} color="#1ed760" /> Download songs to listen offline
-                </li>
-                <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <Check size={16} color="#1ed760" /> Unlimited song skipping
-                </li>
-                <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <Check size={16} color="#1ed760" /> Very high audio quality (320 kbps)
-                </li>
-              </ul>
-            </div>
-
-            {/* Interactive Testing Actions */}
-            <div style={{ borderTop: "1px solid #282828", paddingTop: "24px", display: "grid", gap: "12px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "#b3b3b3" }}>
-                  TEST REVENUE / BILLING ENGINE
-                </span>
-                <span style={{ fontSize: "11px", color: "#1ed760", fontWeight: 650 }}>
-                  STRIPE TEST LEDGER
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <div
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                      background: "#1ed760",
+                      color: "#000",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Sparkles size={20} />
+                  </div>
+                  <div>
+                    <strong style={{ fontSize: "16px", color: "#fff", display: "block" }}>
+                      Subscription Slayed by SubSlayer AI Agent
+                    </strong>
+                    <span style={{ fontSize: "13.5px", color: "#d1c7d6" }}>
+                      {agentSuccessMsg ||
+                        "Your Spotify Premium subscription will end on June 26, 2026. Account will switch to Free tier without renewal charges."}
+                    </span>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    background: "#1ed760",
+                    color: "#000000",
+                    fontWeight: 800,
+                    fontSize: "12px",
+                    padding: "6px 14px",
+                    borderRadius: "20px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  FREE TIER PENDING
                 </span>
               </div>
+            )}
 
-              {/* Action 1: Simulate Charge */}
-              <button
-                onClick={handleSimulateRenewal}
-                disabled={charging}
+            {/* Section 1: Profile Details */}
+            <section style={{ marginBottom: "48px" }}>
+              <h2
                 style={{
-                  background: "#1ed760",
-                  color: "#000000",
-                  border: "none",
-                  padding: "13px 20px",
-                  borderRadius: "24px",
-                  fontWeight: 750,
-                  fontSize: "14px",
-                  cursor: charging ? "wait" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "9px",
-                  transition: "transform 0.15s, background 0.15s",
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.background = "#1fdf64")}
-                onMouseOut={(e) => (e.currentTarget.style.background = "#1ed760")}
-              >
-                {charging ? (
-                  <>
-                    <RefreshCw size={16} className="animate-spin" /> Processing $10.99 Renewal via Stripe...
-                  </>
-                ) : (
-                  <>
-                    <Flame size={16} /> Simulate Monthly Renewal Charge ($10.99)
-                  </>
-                )}
-              </button>
-
-              {/* Action 2: SubSlayer Autonomous Agent Trigger */}
-              <button
-                onClick={handleTriggerSubSlayerAgent}
-                disabled={agentTriggering || subStatus === "Cancelled"}
-                style={{
-                  background: subStatus === "Cancelled" ? "#282828" : "linear-gradient(135deg, #704b73 0%, #4a2d4e 100%)",
-                  color: subStatus === "Cancelled" ? "#888" : "#ffffff",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  padding: "12px 20px",
-                  borderRadius: "24px",
+                  fontSize: "20px",
                   fontWeight: 700,
-                  fontSize: "13.5px",
-                  cursor: agentTriggering || subStatus === "Cancelled" ? "default" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
+                  margin: "0 0 16px 0",
+                  color: "#ffffff",
                 }}
               >
-                <Sparkles size={15} />
-                {agentTriggering
-                  ? "Deploying Autonomous Agent..."
-                  : subStatus === "Cancelled"
-                  ? "Subscription Already Slayed"
-                  : "Deploy SubSlayer AI to Slay Subscription (1-Click)"}
-              </button>
+                Profile
+              </h2>
 
-              {/* Action 3: Manual Cancellation Button */}
-              {subStatus === "Active" && (
+              <div
+                style={{
+                  background: "#181818",
+                  borderRadius: "8px",
+                  border: "1px solid #282828",
+                  padding: "24px 28px",
+                  display: "grid",
+                  gap: "16px",
+                  fontSize: "14px",
+                }}
+              >
+                <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", borderBottom: "1px solid #282828", paddingBottom: "14px" }}>
+                  <span style={{ color: "#a7a7a7" }}>Username</span>
+                  <span style={{ fontWeight: 600 }}>alex_river_demo</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", borderBottom: "1px solid #282828", paddingBottom: "14px" }}>
+                  <span style={{ color: "#a7a7a7" }}>Email</span>
+                  <span style={{ fontWeight: 600 }}>alex.river@subslayer.demo</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", borderBottom: "1px solid #282828", paddingBottom: "14px" }}>
+                  <span style={{ color: "#a7a7a7" }}>Date of birth</span>
+                  <span style={{ fontWeight: 600 }}>14 October 1998</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "180px 1fr" }}>
+                  <span style={{ color: "#a7a7a7" }}>Country or region</span>
+                  <span style={{ fontWeight: 600 }}>United States</span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: "16px" }}>
                 <button
-                  onClick={() => setShowCancelModal(true)}
                   style={{
                     background: "transparent",
-                    color: "#b3b3b3",
-                    border: "1px solid #3e3e3e",
-                    padding: "10px 18px",
-                    borderRadius: "24px",
-                    fontWeight: 650,
-                    fontSize: "13px",
+                    color: "#ffffff",
+                    border: "1px solid #878787",
+                    borderRadius: "500px",
+                    padding: "10px 28px",
+                    fontSize: "14px",
+                    fontWeight: 700,
                     cursor: "pointer",
-                    marginTop: "4px",
+                    transition: "all 0.15s ease",
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.borderColor = "#ffffff"
-                    e.currentTarget.style.color = "#ffffff"
+                    e.currentTarget.style.transform = "scale(1.03)"
                   }}
                   onMouseOut={(e) => {
-                    e.currentTarget.style.borderColor = "#3e3e3e"
-                    e.currentTarget.style.color = "#b3b3b3"
+                    e.currentTarget.style.borderColor = "#878787"
+                    e.currentTarget.style.transform = "scale(1)"
                   }}
                 >
-                  Cancel Plan Manually on Spotify
+                  Edit profile
                 </button>
-              )}
-            </div>
-          </div>
+              </div>
+            </section>
 
-          {/* Right Column: Linked Payment Method & Live SubSlayer Card Shield */}
-          <div style={{ display: "grid", gap: "20px" }}>
-            {/* Payment Method Card */}
-            <div
-              style={{
-                background: "#181818",
-                borderRadius: "12px",
-                border: "1px solid #282828",
-                padding: "24px",
-              }}
-            >
+            {/* Section 2: Your Plan Card (The iconic Spotify Premium Card) */}
+            <section style={{ marginBottom: "48px" }}>
+              <h2
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 700,
+                  margin: "0 0 16px 0",
+                  color: "#ffffff",
+                }}
+              >
+                Your plan
+              </h2>
+
+              <div
+                style={{
+                  background: "#242424",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  border: "1px solid #333333",
+                }}
+              >
+                {/* Top Colored Banner Header */}
+                <div
+                  style={{
+                    background:
+                      subStatus === "Active"
+                        ? "linear-gradient(135deg, rgb(255, 100, 180) 0%, rgb(180, 80, 240) 100%)"
+                        : "linear-gradient(135deg, #444 0%, #222 100%)",
+                    padding: "20px 28px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 900,
+                        letterSpacing: "1px",
+                        textTransform: "uppercase",
+                        color: "#000000",
+                        background: "#ffffff",
+                        padding: "3px 8px",
+                        borderRadius: "4px",
+                        display: "inline-block",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      {subStatus === "Active" ? "SPOTIFY PREMIUM" : "FREE TIER PENDING"}
+                    </span>
+                    <h3 style={{ fontSize: "28px", fontWeight: 900, margin: 0, color: "#ffffff", letterSpacing: "-0.5px" }}>
+                      Individual
+                    </h3>
+                  </div>
+
+                  <span
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      background: "rgba(0,0,0,0.4)",
+                      color: "#ffffff",
+                      padding: "4px 12px",
+                      borderRadius: "16px",
+                    }}
+                  >
+                    1 account
+                  </span>
+                </div>
+
+                {/* Card Body Details */}
+                <div style={{ padding: "28px" }}>
+                  <div style={{ fontSize: "14px", color: "#e0e0e0", lineHeight: 1.6, marginBottom: "20px" }}>
+                    {subStatus === "Active" ? (
+                      <>
+                        You are currently on <strong>Spotify Premium Individual</strong>. Your next payment of{" "}
+                        <strong>$10.99</strong> will be on <strong>June 26, 2026</strong>.
+                      </>
+                    ) : (
+                      <>
+                        Your Premium benefits will end on <strong>June 26, 2026</strong>. After this date, your
+                        account switches to Spotify Free.
+                      </>
+                    )}
+                  </div>
+
+                  {/* Feature Checklist */}
+                  <div style={{ display: "grid", gap: "10px", marginBottom: "24px", fontSize: "14px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <Check size={18} color="#1ed760" /> Ad-free music listening
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <Check size={18} color="#1ed760" /> Play anywhere - even offline
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <Check size={18} color="#1ed760" /> On-demand playback
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <Check size={18} color="#1ed760" /> High audio quality
+                    </div>
+                  </div>
+
+                  {/* Plan Price & Payment Method */}
+                  <div
+                    style={{
+                      background: "#181818",
+                      borderRadius: "8px",
+                      padding: "16px 20px",
+                      marginBottom: "28px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <span style={{ fontSize: "12px", color: "#a7a7a7", display: "block" }}>
+                        Payment method
+                      </span>
+                      <strong style={{ fontSize: "15px", color: "#ffffff" }}>
+                        Visa ending in {card?.last4 || "4242"}
+                      </strong>
+                    </div>
+
+                    <div style={{ textAlign: "right" }}>
+                      <span style={{ fontSize: "12px", color: "#a7a7a7", display: "block" }}>
+                        Monthly billing
+                      </span>
+                      <strong style={{ fontSize: "18px", color: "#ffffff" }}>
+                        $10.99 / mo
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Official Action Buttons */}
+                  <div style={{ display: "flex", gap: "14px", flexWrap: "wrap" }}>
+                    <button
+                      style={{
+                        background: "#ffffff",
+                        color: "#000000",
+                        border: "none",
+                        borderRadius: "500px",
+                        padding: "12px 32px",
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                      onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.04)")}
+                      onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                    >
+                      Change plan
+                    </button>
+
+                    {subStatus === "Active" ? (
+                      <button
+                        onClick={() => setShowCancelModal(true)}
+                        style={{
+                          background: "transparent",
+                          color: "#ffffff",
+                          border: "1px solid #878787",
+                          borderRadius: "500px",
+                          padding: "12px 32px",
+                          fontSize: "14px",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.borderColor = "#ffffff"
+                          e.currentTarget.style.transform = "scale(1.04)"
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.borderColor = "#878787"
+                          e.currentTarget.style.transform = "scale(1)"
+                        }}
+                      >
+                        Cancel plan
+                      </button>
+                    ) : (
+                      <button
+                        style={{
+                          background: "#282828",
+                          color: "#888888",
+                          border: "1px solid #3e3e3e",
+                          borderRadius: "500px",
+                          padding: "12px 32px",
+                          fontSize: "14px",
+                          fontWeight: 700,
+                          cursor: "default",
+                        }}
+                      >
+                        Plan Cancelled
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 3: SubSlayer Payment Shield & Simulation Controls */}
+            <section style={{ marginBottom: "48px" }}>
               <div
                 style={{
                   display: "flex",
@@ -691,202 +882,332 @@ export function SpotifyDemoPortal({
                   marginBottom: "16px",
                 }}
               >
-                <h3 style={{ fontSize: "16px", fontWeight: 750, margin: 0 }}>
-                  Payment Method
-                </h3>
+                <h2 style={{ fontSize: "20px", fontWeight: 700, margin: 0, color: "#ffffff" }}>
+                  Payment Method &amp; Virtual Card Shield
+                </h2>
                 <span
                   style={{
+                    background: "rgba(112, 75, 115, 0.2)",
+                    border: "1px solid #704b73",
+                    color: "#f3e8f5",
                     fontSize: "11px",
-                    fontWeight: 700,
-                    color: "#a592aa",
-                    background: "#241727",
-                    border: "1px solid #4a2d4e",
-                    padding: "2px 8px",
+                    fontWeight: 750,
+                    padding: "3px 8px",
                     borderRadius: "4px",
                   }}
                 >
-                  SUBSLAYER VIRTUAL CARD
+                  POWERED BY SUBSLAYER
                 </span>
               </div>
 
-              {/* Realistic Card Preview */}
               <div
                 style={{
-                  background: isLocked
-                    ? "linear-gradient(135deg, #2d1a24 0%, #170d13 100%)"
-                    : "linear-gradient(135deg, #18281d 0%, #0d1a10 100%)",
+                  background: "#181818",
+                  borderRadius: "8px",
                   border: `1.5px solid ${isLocked ? "#b91c1c" : "#1ed760"}`,
-                  borderRadius: "10px",
-                  padding: "16px 18px",
-                  marginBottom: "16px",
-                  position: "relative",
-                  boxShadow: isLocked
-                    ? "0 4px 20px rgba(185, 28, 28, 0.2)"
-                    : "0 4px 20px rgba(30, 215, 96, 0.15)",
+                  padding: "24px 28px",
+                  display: "grid",
+                  gap: "20px",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff", letterSpacing: "1px" }}>
-                    VISA DEBIT
-                  </span>
+                  <div>
+                    <span style={{ fontSize: "12px", color: "#a7a7a7" }}>
+                      Registered Card
+                    </span>
+                    <div style={{ fontSize: "16px", fontWeight: 700, fontFamily: "monospace", letterSpacing: "1px", marginTop: "2px" }}>
+                      VISA •••• •••• •••• {card?.last4 || "4242"}
+                    </div>
+                  </div>
+
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "4px",
-                      fontSize: "11px",
-                      fontWeight: 800,
+                      gap: "6px",
+                      background: isLocked ? "rgba(185, 28, 28, 0.2)" : "rgba(30, 215, 96, 0.2)",
+                      border: `1px solid ${isLocked ? "#ef4444" : "#1ed760"}`,
                       color: isLocked ? "#fca5a5" : "#86efac",
+                      padding: "6px 14px",
+                      borderRadius: "20px",
+                      fontSize: "12px",
+                      fontWeight: 750,
                     }}
                   >
-                    {isLocked ? <Lock size={12} /> : <Unlock size={12} />}
-                    {isLocked ? "SHIELD LOCKED ($0.00)" : "SHIELD ACTIVE ($20.00)"}
+                    {isLocked ? <Lock size={14} /> : <Unlock size={14} />}
+                    {isLocked ? "SHIELD LOCKED ($0.00 LIMIT)" : "SHIELD ACTIVE ($20.00 LIMIT)"}
                   </div>
                 </div>
 
                 <div
                   style={{
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    letterSpacing: "2px",
-                    margin: "18px 0 12px",
-                    fontFamily: "monospace",
+                    background: "#222222",
+                    borderRadius: "6px",
+                    padding: "12px 16px",
+                    fontSize: "13px",
+                    color: "#ccc",
+                    lineHeight: 1.5,
                   }}
                 >
-                  •••• •••• •••• {card?.last4 || "4242"}
+                  {isLocked ? (
+                    <span style={{ color: "#fca5a5" }}>
+                      <strong>Active Defense:</strong> Card balance locked to $0.00. Any monthly billing charge attempts by Spotify will be automatically rejected before Stripe processes them.
+                    </span>
+                  ) : (
+                    <span style={{ color: "#86efac" }}>
+                      <strong>Card Unlocked:</strong> Test payments up to $20.00 will succeed against the Stripe test ledger and demo wallet.
+                    </span>
+                  )}
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "11.5px",
-                    color: "#a3a3a3",
-                  }}
-                >
-                  <span>CARDHOLDER: ALEX RIVER</span>
-                  <span>EXP: 12/28</span>
+                {/* Simulation Action Controls */}
+                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                  <button
+                    onClick={handleSimulateRenewal}
+                    disabled={charging}
+                    style={{
+                      background: "#1ed760",
+                      color: "#000000",
+                      border: "none",
+                      borderRadius: "500px",
+                      padding: "11px 24px",
+                      fontSize: "13.5px",
+                      fontWeight: 750,
+                      cursor: charging ? "wait" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      transition: "transform 0.15s ease",
+                    }}
+                    onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+                    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                  >
+                    {charging ? (
+                      <>
+                        <RefreshCw size={14} className="animate-spin" /> Charging $10.99...
+                      </>
+                    ) : (
+                      <>
+                        <Flame size={14} /> Simulate Monthly Renewal Charge ($10.99)
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleToggleCardLock}
+                    disabled={togglingLock}
+                    style={{
+                      background: isLocked ? "#1e293b" : "#450a0a",
+                      color: isLocked ? "#93c5fd" : "#fca5a5",
+                      border: `1px solid ${isLocked ? "#3b82f6" : "#ef4444"}`,
+                      borderRadius: "500px",
+                      padding: "11px 22px",
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      cursor: togglingLock ? "wait" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "7px",
+                    }}
+                  >
+                    {isLocked ? <Unlock size={14} /> : <Lock size={14} />}
+                    {isLocked ? "Unlock Card Shield" : "Lock Card Shield to $0.00"}
+                  </button>
+
+                  <button
+                    onClick={handleTriggerSubSlayerAgent}
+                    disabled={agentTriggering || subStatus === "Cancelled"}
+                    style={{
+                      background: subStatus === "Cancelled" ? "#282828" : "#704b73",
+                      color: subStatus === "Cancelled" ? "#777" : "#fff",
+                      border: "none",
+                      borderRadius: "500px",
+                      padding: "11px 22px",
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      cursor: agentTriggering || subStatus === "Cancelled" ? "default" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "7px",
+                    }}
+                  >
+                    <Sparkles size={14} />
+                    {subStatus === "Cancelled" ? "Slayed by SubSlayer AI" : "1-Click Slay with SubSlayer AI"}
+                  </button>
                 </div>
               </div>
+            </section>
 
-              {/* Shield Status Explainer */}
+            {/* Section 4: Sign out everywhere */}
+            <section>
+              <h2
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 700,
+                  margin: "0 0 16px 0",
+                  color: "#ffffff",
+                }}
+              >
+                Sign out everywhere
+              </h2>
               <div
                 style={{
-                  background: "#242424",
+                  background: "#181818",
                   borderRadius: "8px",
-                  padding: "12px 14px",
-                  marginBottom: "16px",
-                  fontSize: "12.5px",
-                  lineHeight: 1.5,
-                  color: "#cccccc",
+                  border: "1px solid #282828",
+                  padding: "24px 28px",
                 }}
               >
-                {isLocked ? (
-                  <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                    <ShieldAlert size={16} color="#f87171" style={{ flexShrink: 0, marginTop: "2px" }} />
-                    <span>
-                      <strong style={{ color: "#f87171" }}>Card Shield is Locked:</strong> All recurring charge attempts by Spotify will be automatically rejected at the gateway.
-                    </span>
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                    <ShieldCheck size={16} color="#1ed760" style={{ flexShrink: 0, marginTop: "2px" }} />
-                    <span>
-                      <strong style={{ color: "#1ed760" }}>Card Shield is Unlocked:</strong> Test charges up to the $20.00 spending limit will be approved via Stripe test ledger.
-                    </span>
-                  </div>
-                )}
+                <p style={{ fontSize: "14px", color: "#a7a7a7", margin: "0 0 20px 0", lineHeight: 1.5 }}>
+                  Sign out of Spotify everywhere you’re logged in, including mobile, tablet, web player and desktop app.
+                </p>
+                <button
+                  style={{
+                    background: "transparent",
+                    color: "#ffffff",
+                    border: "1px solid #878787",
+                    borderRadius: "500px",
+                    padding: "10px 28px",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.borderColor = "#ffffff"
+                    e.currentTarget.style.transform = "scale(1.03)"
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.borderColor = "#878787"
+                    e.currentTarget.style.transform = "scale(1)"
+                  }}
+                >
+                  Sign out everywhere
+                </button>
               </div>
+            </section>
+          </div>
+        </main>
+      </div>
 
-              {/* Quick Shield Lock Toggle */}
-              <button
-                onClick={handleToggleCardLock}
-                disabled={togglingLock}
-                style={{
-                  width: "100%",
-                  background: isLocked ? "#1e293b" : "#450a0a",
-                  color: isLocked ? "#93c5fd" : "#fca5a5",
-                  border: `1px solid ${isLocked ? "#3b82f6" : "#ef4444"}`,
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  fontSize: "12.5px",
-                  fontWeight: 700,
-                  cursor: togglingLock ? "wait" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "7px",
-                }}
-              >
-                {isLocked ? (
-                  <>
-                    <Unlock size={14} /> Unlock Shield (Allow Charges)
-                  </>
-                ) : (
-                  <>
-                    <Lock size={14} /> Lock Shield to $0.00 (Block Charges)
-                  </>
-                )}
-              </button>
+      {/* 4. Official Spotify Footer (accounts.spotify.com) */}
+      <footer
+        style={{
+          background: "#000000",
+          borderTop: "1px solid #1c1c1c",
+          padding: "60px 40px 40px",
+          marginTop: "60px",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1170px",
+            margin: "0 auto",
+            display: "grid",
+            gridTemplateColumns: "1.5fr 1fr 1fr 1fr 1fr",
+            gap: "32px",
+            marginBottom: "40px",
+          }}
+        >
+          <div>
+            <SpotifyWordmark height={32} />
+          </div>
+
+          <div>
+            <span style={{ fontSize: "12px", fontWeight: 900, textTransform: "uppercase", color: "#919496", display: "block", marginBottom: "16px" }}>
+              Company
+            </span>
+            <div style={{ display: "grid", gap: "10px", fontSize: "14px", color: "#ffffff" }}>
+              <span>About</span>
+              <span>Jobs</span>
+              <span>For the Record</span>
             </div>
+          </div>
 
-            {/* Recent Billing Simulation Activity */}
+          <div>
+            <span style={{ fontSize: "12px", fontWeight: 900, textTransform: "uppercase", color: "#919496", display: "block", marginBottom: "16px" }}>
+              Communities
+            </span>
+            <div style={{ display: "grid", gap: "10px", fontSize: "14px", color: "#ffffff" }}>
+              <span>For Artists</span>
+              <span>Developers</span>
+              <span>Advertising</span>
+              <span>Investors</span>
+            </div>
+          </div>
+
+          <div>
+            <span style={{ fontSize: "12px", fontWeight: 900, textTransform: "uppercase", color: "#919496", display: "block", marginBottom: "16px" }}>
+              Useful links
+            </span>
+            <div style={{ display: "grid", gap: "10px", fontSize: "14px", color: "#ffffff" }}>
+              <span>Support</span>
+              <span>Web Player</span>
+              <span>Free Mobile App</span>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}>
             <div
               style={{
-                background: "#181818",
-                borderRadius: "12px",
-                border: "1px solid #282828",
-                padding: "20px 24px",
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                background: "#222326",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <h3 style={{ fontSize: "14px", fontWeight: 750, margin: "0 0 12px 0", color: "#b3b3b3" }}>
-                RECENT CHARGE SIMULATIONS
-              </h3>
-
-              {chargeHistory.length === 0 ? (
-                <p style={{ color: "#666", fontSize: "12.5px", margin: 0, fontStyle: "italic" }}>
-                  Click &apos;Simulate Monthly Renewal Charge&apos; to test payment shield interception.
-                </p>
-              ) : (
-                <div style={{ display: "grid", gap: "8px" }}>
-                  {chargeHistory.map((item) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        background: "#242424",
-                        padding: "10px 12px",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        borderLeft: `3px solid ${item.status === "APPROVED" ? "#1ed760" : "#ef4444"}`,
-                      }}
-                    >
-                      <div>
-                        <strong
-                          style={{
-                            color: item.status === "APPROVED" ? "#1ed760" : "#f87171",
-                            display: "block",
-                          }}
-                        >
-                          {item.status === "APPROVED" ? "APPROVED ($10.99)" : "DECLINED ($10.99)"}
-                        </strong>
-                        <span style={{ color: "#888", fontSize: "11px" }}>{item.reason}</span>
-                      </div>
-                      <span style={{ color: "#666", fontSize: "11px", whiteHeight: "nowrap" }}>
-                        {item.timestamp}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+              </svg>
+            </div>
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                background: "#222326",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
             </div>
           </div>
         </div>
-      </main>
 
-      {/* 4. Spotify Realistic Payment Outcome Dialog */}
+
+        <div
+          style={{
+            maxWidth: "1170px",
+            margin: "0 auto",
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "12px",
+            color: "#919496",
+            borderTop: "1px solid #1c1c1c",
+            paddingTop: "24px",
+          }}
+        >
+          <div style={{ display: "flex", gap: "20px" }}>
+            <span>Legal</span>
+            <span>Safety &amp; Privacy Center</span>
+            <span>Privacy Policy</span>
+            <span>Cookies</span>
+            <span>About Ads</span>
+          </div>
+          <span>USA · © 2026 Spotify AB</span>
+        </div>
+      </footer>
+
+      {/* 5. Realistic Spotify Charge Result Modal */}
       {chargeResult && (
         <div
           style={{
@@ -897,7 +1218,7 @@ export function SpotifyDemoPortal({
             alignItems: "center",
             justifyContent: "center",
             padding: "20px",
-            zIndex: 999,
+            zIndex: 9999,
           }}
           onClick={() => setChargeResult(null)}
         >
@@ -905,12 +1226,11 @@ export function SpotifyDemoPortal({
             style={{
               background: "#181818",
               border: `1.5px solid ${chargeResult.success ? "#1ed760" : "#ef4444"}`,
-              borderRadius: "16px",
+              borderRadius: "12px",
               padding: "32px",
-              maxWidth: "480px",
+              maxWidth: "460px",
               width: "100%",
               color: "#fff",
-              boxShadow: "0 20px 50px rgba(0,0,0,0.6)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -932,17 +1252,16 @@ export function SpotifyDemoPortal({
               </div>
 
               <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 8px 0" }}>
-                {chargeResult.success ? "Payment Succeeded" : "Payment Declined by Bank"}
+                {chargeResult.success ? "Payment Processed" : "Payment Declined"}
               </h3>
 
-              <p style={{ color: "#b3b3b3", fontSize: "13.5px", lineHeight: 1.5, margin: 0 }}>
+              <p style={{ color: "#a7a7a7", fontSize: "14px", lineHeight: 1.5, margin: 0 }}>
                 {chargeResult.success
                   ? "Spotify charged $10.99 to your SubSlayer virtual card via Stripe test mode."
                   : "Spotify tried to charge $10.99, but SubSlayer Virtual Card Shield blocked the transaction."}
               </p>
             </div>
 
-            {/* Diagnostic Details */}
             <div
               style={{
                 background: "#242424",
@@ -972,12 +1291,6 @@ export function SpotifyDemoPortal({
                   </span>
                 </div>
               )}
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#888" }}>Amount Protected:</span>
-                <strong style={{ color: "#fff" }}>
-                  ${(chargeResult.amountBlocked || 10.99).toFixed(2)}
-                </strong>
-              </div>
             </div>
 
             <button
@@ -988,7 +1301,7 @@ export function SpotifyDemoPortal({
                 color: "#000000",
                 border: "none",
                 padding: "12px",
-                borderRadius: "24px",
+                borderRadius: "500px",
                 fontWeight: 750,
                 fontSize: "14px",
                 cursor: "pointer",
@@ -1000,7 +1313,7 @@ export function SpotifyDemoPortal({
         </div>
       )}
 
-      {/* 5. Spotify Manual Cancellation Confirmation Modal */}
+      {/* 6. Realistic Spotify 2-Step Cancellation Confirmation Modal */}
       {showCancelModal && (
         <div
           style={{
@@ -1011,7 +1324,7 @@ export function SpotifyDemoPortal({
             alignItems: "center",
             justifyContent: "center",
             padding: "20px",
-            zIndex: 999,
+            zIndex: 9999,
           }}
           onClick={() => setShowCancelModal(false)}
         >
@@ -1019,20 +1332,20 @@ export function SpotifyDemoPortal({
             style={{
               background: "#181818",
               border: "1px solid #333",
-              borderRadius: "16px",
-              padding: "32px",
-              maxWidth: "500px",
+              borderRadius: "12px",
+              padding: "36px",
+              maxWidth: "520px",
               width: "100%",
               color: "#fff",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ textAlign: "center", marginBottom: "20px" }}>
-              <SpotifyLogo size={48} style={{ margin: "0 auto 16px" }} />
-              <h3 style={{ fontSize: "24px", fontWeight: 800, margin: "0 0 10px 0" }}>
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <SpotifyLogo size={52} style={{ margin: "0 auto 16px" }} />
+              <h3 style={{ fontSize: "26px", fontWeight: 900, margin: "0 0 10px 0", letterSpacing: "-0.5px" }}>
                 Switch to Spotify Free?
               </h3>
-              <p style={{ color: "#b3b3b3", fontSize: "14px", lineHeight: 1.5, margin: 0 }}>
+              <p style={{ color: "#a7a7a7", fontSize: "14px", lineHeight: 1.5, margin: 0 }}>
                 If you cancel Premium, you will switch to Spotify Free after your current billing period ends on June 26, 2026.
               </p>
             </div>
@@ -1040,16 +1353,16 @@ export function SpotifyDemoPortal({
             <div
               style={{
                 background: "#242424",
-                borderRadius: "10px",
-                padding: "16px",
-                marginBottom: "24px",
-                fontSize: "13px",
+                borderRadius: "8px",
+                padding: "18px 20px",
+                marginBottom: "28px",
+                fontSize: "13.5px",
               }}
             >
-              <span style={{ fontWeight: 700, color: "#f87171", display: "block", marginBottom: "8px" }}>
+              <span style={{ fontWeight: 700, color: "#f87171", display: "block", marginBottom: "10px" }}>
                 What you will lose:
               </span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "6px" }}>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "8px" }}>
                 <li>❌ Ad interruptions between songs</li>
                 <li>❌ Shuffle-only playback on mobile</li>
                 <li>❌ No offline music downloads</li>
@@ -1057,31 +1370,31 @@ export function SpotifyDemoPortal({
               </ul>
             </div>
 
-            <div style={{ display: "grid", gap: "10px" }}>
+            <div style={{ display: "grid", gap: "12px" }}>
               <button
                 onClick={() => setShowCancelModal(false)}
                 style={{
                   background: "#1ed760",
                   color: "#000000",
                   border: "none",
-                  padding: "13px",
-                  borderRadius: "24px",
+                  padding: "14px",
+                  borderRadius: "500px",
                   fontWeight: 750,
                   fontSize: "14px",
                   cursor: "pointer",
                 }}
               >
-                Keep My Premium Plan
+                Keep my Premium Individual
               </button>
               <button
                 onClick={handleManualCancelConfirm}
                 style={{
                   background: "transparent",
-                  color: "#b3b3b3",
+                  color: "#a7a7a7",
                   border: "1px solid #444",
                   padding: "12px",
-                  borderRadius: "24px",
-                  fontWeight: 650,
+                  borderRadius: "500px",
+                  fontWeight: 700,
                   fontSize: "13.5px",
                   cursor: "pointer",
                 }}

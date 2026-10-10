@@ -5,17 +5,26 @@ import {
   ArrowLeft,
   Check,
   CheckCircle2,
+  ChevronDown,
+  Cloud,
+  CreditCard,
+  Download,
   ExternalLink,
   Flame,
+  Globe,
   HardDrive,
+  HelpCircle,
   Info,
-  Layers,
   Lock,
+  MoreHorizontal,
   RefreshCw,
+  Search,
+  Shield,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
   Unlock,
+  User,
   X,
   Zap,
 } from "lucide-react"
@@ -28,7 +37,16 @@ import {
   updateSubscriptionApi,
   type SimulateChargeResponse,
 } from "../../services/api"
-import { AdobeLogo } from "../common/PlatformLogos"
+import {
+  AdobeLogo,
+  AdobeCreativeCloudLogo,
+  PhotoshopIcon,
+  IllustratorIcon,
+  PremiereIcon,
+  AfterEffectsIcon,
+  InDesignIcon,
+  AcrobatIcon,
+} from "../common/PlatformLogos"
 
 export interface AdobeDemoPortalProps {
   onNavigate: (page: Page) => void
@@ -39,15 +57,6 @@ export interface AdobeDemoPortalProps {
   onCardUpdated?: (card: VirtualCard) => void
 }
 
-interface ChargeHistoryItem {
-  id: string
-  timestamp: string
-  amount: number
-  status: "APPROVED" | "DECLINED"
-  reason: string
-  paymentIntentId?: string | null
-}
-
 export function AdobeDemoPortal({
   onNavigate,
   onOpenSplit,
@@ -56,7 +65,6 @@ export function AdobeDemoPortal({
   virtualCard,
   onCardUpdated,
 }: AdobeDemoPortalProps) {
-  // Local state
   const [subStatus, setSubStatus] = useState<"Active" | "Cancelled" | "Pending Cancellation">(
     currentSubscription?.status || "Active",
   )
@@ -64,9 +72,9 @@ export function AdobeDemoPortal({
   const [charging, setCharging] = useState(false)
   const [togglingLock, setTogglingLock] = useState(false)
   const [chargeResult, setChargeResult] = useState<SimulateChargeResponse | null>(null)
-  const [chargeHistory, setChargeHistory] = useState<ChargeHistoryItem[]>([])
   const [agentTriggering, setAgentTriggering] = useState(false)
   const [agentSuccessMsg, setAgentSuccessMsg] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState("plans")
 
   // 4-Step Dark Pattern Maze state
   const [showMazeModal, setShowMazeModal] = useState(false)
@@ -75,7 +83,6 @@ export function AdobeDemoPortal({
   const [typedConfirmation, setTypedConfirmation] = useState<string>("")
   const [claimedDiscount, setClaimedDiscount] = useState(false)
 
-  // Sync subscription and card
   useEffect(() => {
     if (currentSubscription) {
       setSubStatus(currentSubscription.status)
@@ -115,16 +122,6 @@ export function AdobeDemoPortal({
     try {
       const res = await simulateChargeApi(cardId, 59.99, "Adobe")
       setChargeResult(res)
-
-      const historyEntry: ChargeHistoryItem = {
-        id: `ch_${Date.now()}`,
-        timestamp: new Date().toLocaleTimeString(),
-        amount: 59.99,
-        status: res.status,
-        reason: res.reason,
-        paymentIntentId: res.stripePaymentIntentId,
-      }
-      setChargeHistory((prev) => [historyEntry, ...prev.slice(0, 4)])
     } catch (err: any) {
       setChargeResult({
         success: false,
@@ -150,7 +147,6 @@ export function AdobeDemoPortal({
       setCard(updated)
       onCardUpdated?.(updated)
     } catch {
-      // Local fallback
       const fallback: VirtualCard = {
         ...card,
         demoPolicyLocked: newLockState,
@@ -183,7 +179,7 @@ export function AdobeDemoPortal({
     }
   }
 
-  // One-click Slay with SubSlayer AI Agent (Bypasses dark pattern maze & waives fees!)
+  // One-click Slay with SubSlayer AI Agent
   async function handleTriggerSubSlayerAgent() {
     setShowMazeModal(false)
     setAgentTriggering(true)
@@ -214,49 +210,43 @@ export function AdobeDemoPortal({
     <div
       style={{
         minHeight: "100vh",
-        background: "#1e1e1e",
-        color: "#ffffff",
-        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        background: "#f5f5f5",
+        color: "#222222",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      {/* 1. SubSlayer Top Sandbox Banner */}
+      {/* 1. SubSlayer Demo Floating Controller */}
       <div
         style={{
-          background: "linear-gradient(90deg, #2b1115 0%, #3d151c 50%, #1a0a0d 100%)",
-          borderBottom: "1px solid #751b22",
-          padding: "10px 24px",
+          background: "#1f1422",
+          borderBottom: "1px solid #3d2342",
+          padding: "8px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "12px",
-          fontSize: "13px",
+          fontSize: "12px",
           position: "sticky",
           top: 0,
-          zIndex: 100,
+          zIndex: 1000,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span
             style={{
               background: "#fa0f00",
               color: "#fff",
               fontWeight: 800,
               fontSize: "10px",
-              padding: "3px 7px",
+              padding: "2px 6px",
               borderRadius: "4px",
-              letterSpacing: "0.5px",
             }}
           >
-            DARK PATTERN SANDBOX
+            DEMO
           </span>
-          <span style={{ fontWeight: 650, color: "#ffebee" }}>
-            Adobe Creative Cloud Account Simulator
-          </span>
-          <span style={{ color: "#d99aa1", fontSize: "12px" }}>
-            • Test 4-step retention maze, asset threats, &amp; SubSlayer fee-waiver agent
+          <span style={{ color: "#eedef0", fontWeight: 600 }}>
+            Simulated Adobe Creative Cloud Account • Test 4-Step Dark Pattern Maze &amp; $119.98 Fee Waiver
           </span>
         </div>
 
@@ -265,20 +255,17 @@ export function AdobeDemoPortal({
             <button
               onClick={onOpenSplit}
               style={{
-                background: "rgba(255,255,255,0.1)",
-                color: "#fff",
+                background: "rgba(255,255,255,0.08)",
                 border: "1px solid rgba(255,255,255,0.2)",
-                padding: "6px 12px",
-                borderRadius: "6px",
-                fontSize: "12px",
-                fontWeight: 600,
+                color: "#fff",
+                padding: "4px 10px",
+                borderRadius: "4px",
                 cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
+                fontSize: "11.5px",
+                fontWeight: 600,
               }}
             >
-              ◫ Split Sandbox Mode
+              ◫ Split Screen
             </button>
           )}
 
@@ -286,13 +273,13 @@ export function AdobeDemoPortal({
             onClick={() => onNavigate("demo-spotify")}
             style={{
               background: "rgba(30, 215, 96, 0.15)",
-              color: "#86efac",
               border: "1px solid rgba(30, 215, 96, 0.35)",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 600,
+              color: "#86efac",
+              padding: "4px 10px",
+              borderRadius: "4px",
               cursor: "pointer",
+              fontSize: "11.5px",
+              fontWeight: 600,
             }}
           >
             Switch to Spotify Demo →
@@ -302,117 +289,196 @@ export function AdobeDemoPortal({
             onClick={() => onNavigate("app")}
             style={{
               background: "#704b73",
-              color: "#fff",
               border: "none",
-              padding: "6px 14px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 650,
+              color: "#fff",
+              padding: "4px 12px",
+              borderRadius: "4px",
               cursor: "pointer",
+              fontSize: "11.5px",
+              fontWeight: 700,
               display: "flex",
               alignItems: "center",
-              gap: "6px",
+              gap: "4px",
             }}
           >
-            <ArrowLeft size={14} /> Back to SubSlayer Hub
+            <ArrowLeft size={12} /> SubSlayer Hub
           </button>
         </div>
       </div>
 
-      {/* 2. Official Adobe Creative Cloud Header */}
+      {/* 2. Official Adobe Global Navigation Header (account.adobe.com) */}
       <header
         style={{
-          background: "#141414",
-          borderBottom: "1px solid #333333",
-          padding: "14px 36px",
+          background: "#ffffff",
+          height: "64px",
+          padding: "0 36px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          borderBottom: "1px solid #e1e1e1",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-          <AdobeLogo size={32} />
-          <span
-            style={{
-              fontSize: "19px",
-              fontWeight: 800,
-              letterSpacing: "-0.4px",
-              color: "#ffffff",
-            }}
-          >
-            Adobe Account
+          <AdobeLogo size={28} />
+          <span style={{ fontSize: "19px", fontWeight: 800, letterSpacing: "-0.5px", color: "#fa0f00" }}>
+            Adobe
           </span>
-          <span
-            style={{
-              fontSize: "11px",
-              fontWeight: 700,
-              color: "#aaa",
-              background: "#2a2a2a",
-              padding: "2px 8px",
-              borderRadius: "4px",
-              marginLeft: "4px",
-            }}
-          >
-            CREATIVE CLOUD
+          <div style={{ width: "1px", height: "18px", background: "#d0d0d0" }} />
+          <span style={{ fontSize: "16px", fontWeight: 700, color: "#222222" }}>
+            Account
           </span>
         </div>
 
-        <nav style={{ display: "flex", alignItems: "center", gap: "28px", fontSize: "13.5px", fontWeight: 650 }}>
-          <span style={{ color: "#ffffff", borderBottom: "2px solid #fa0f00", paddingBottom: "14px" }}>
-            Plans &amp; Payment
-          </span>
-          <span style={{ color: "#999", cursor: "pointer" }}>Profile</span>
-          <span style={{ color: "#999", cursor: "pointer" }}>Password &amp; Security</span>
-          <span style={{ color: "#999", cursor: "pointer" }}>Connected Apps</span>
-          <div
+        {/* Global Navigation Tabs (Adobe Spectrum Style) */}
+        <nav style={{ display: "flex", alignItems: "center", gap: "28px", height: "100%" }}>
+          <button
+            onClick={() => setActiveTab("overview")}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: "#2a2a2a",
-              padding: "4px 12px 4px 6px",
-              borderRadius: "20px",
-              fontSize: "13px",
+              background: "none",
+              border: "none",
+              height: "100%",
+              fontSize: "14px",
+              fontWeight: activeTab === "overview" ? 700 : 500,
+              color: activeTab === "overview" ? "#0265dc" : "#505050",
+              borderBottom: activeTab === "overview" ? "3px solid #0265dc" : "3px solid transparent",
+              cursor: "pointer",
+              padding: "0 4px",
             }}
           >
-            <div
-              style={{
-                width: "24px",
-                height: "24px",
-                borderRadius: "50%",
-                background: "#fa0f00",
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 800,
-                fontSize: "11px",
-              }}
-            >
-              A
-            </div>
-            <span>alex.river@subslayer.demo</span>
-          </div>
+            Overview
+          </button>
+
+          <button
+            onClick={() => setActiveTab("plans")}
+            style={{
+              background: "none",
+              border: "none",
+              height: "100%",
+              fontSize: "14px",
+              fontWeight: activeTab === "plans" ? 700 : 500,
+              color: activeTab === "plans" ? "#0265dc" : "#505050",
+              borderBottom: activeTab === "plans" ? "3px solid #0265dc" : "3px solid transparent",
+              cursor: "pointer",
+              padding: "0 4px",
+            }}
+          >
+            Plans
+          </button>
+
+          <button
+            onClick={() => setActiveTab("payment")}
+            style={{
+              background: "none",
+              border: "none",
+              height: "100%",
+              fontSize: "14px",
+              fontWeight: activeTab === "payment" ? 700 : 500,
+              color: activeTab === "payment" ? "#0265dc" : "#505050",
+              borderBottom: activeTab === "payment" ? "3px solid #0265dc" : "3px solid transparent",
+              cursor: "pointer",
+              padding: "0 4px",
+            }}
+          >
+            Payment
+          </button>
+
+          <button
+            style={{
+              background: "none",
+              border: "none",
+              height: "100%",
+              fontSize: "14px",
+              fontWeight: 500,
+              color: "#505050",
+              cursor: "pointer",
+              padding: "0 4px",
+            }}
+          >
+            Password &amp; Security
+          </button>
+
+          <button
+            style={{
+              background: "none",
+              border: "none",
+              height: "100%",
+              fontSize: "14px",
+              fontWeight: 500,
+              color: "#505050",
+              cursor: "pointer",
+              padding: "0 4px",
+            }}
+          >
+            Privacy
+          </button>
         </nav>
+
+        {/* Right Nav Icons */}
+        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+          <div
+            title="Help"
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#505050",
+              cursor: "pointer",
+            }}
+          >
+            <HelpCircle size={19} />
+          </div>
+
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              background: "#0265dc",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: 750,
+              fontSize: "14px",
+              cursor: "pointer",
+            }}
+            title="Alex River (alex.river@subslayer.demo)"
+          >
+            A
+          </div>
+        </div>
       </header>
 
-      {/* 3. Main Adobe Body Content */}
+      {/* 3. Main Content Container (account.adobe.com/plans) */}
       <main
         style={{
-          maxWidth: "1050px",
+          maxWidth: "1080px",
           width: "100%",
           margin: "0 auto",
-          padding: "36px 24px",
+          padding: "40px 24px 80px",
           flex: 1,
         }}
       >
-        {/* Banner notification if slayed by SubSlayer */}
+        <div style={{ marginBottom: "28px" }}>
+          <h1 style={{ fontSize: "32px", fontWeight: 800, margin: "0 0 6px 0", color: "#222222", letterSpacing: "-0.5px" }}>
+            Plans
+          </h1>
+          <p style={{ color: "#6e6e6e", fontSize: "14.5px", margin: 0 }}>
+            Manage your Adobe subscriptions, cloud storage, and billing options.
+          </p>
+        </div>
+
+        {/* Slay Announcement Banner */}
         {(subStatus === "Cancelled" || agentSuccessMsg) && (
           <div
             style={{
-              background: "linear-gradient(135deg, rgba(112, 75, 115, 0.3) 0%, rgba(250, 15, 0, 0.15) 100%)",
-              border: "1px solid #704b73",
-              borderRadius: "12px",
+              background: "#f4eff5",
+              border: "1.5px solid #704b73",
+              borderRadius: "8px",
               padding: "16px 20px",
               marginBottom: "28px",
               display: "flex",
@@ -434,595 +500,491 @@ export function AdobeDemoPortal({
                   justifyContent: "center",
                 }}
               >
-                <Sparkles size={19} />
+                <Sparkles size={18} />
               </div>
               <div>
-                <strong style={{ fontSize: "15px", color: "#ffffff", display: "block" }}>
+                <strong style={{ fontSize: "15px", color: "#321d36", display: "block" }}>
                   SubSlayer AI Fee-Waived Cancellation Verified
                 </strong>
-                <span style={{ fontSize: "13px", color: "#d2c7d4" }}>
+                <span style={{ fontSize: "13px", color: "#5a4360" }}>
                   {agentSuccessMsg ||
-                    "SubSlayer AI orchestrated this cancellation via Adobe's billing gateway. The $119.98 early termination fee was successfully waived! Plan ends on June 28, 2026."}
+                    "SubSlayer AI orchestrated this cancellation via Adobe API. The $119.98 penalty fee was waived! Account ends on June 28, 2026."}
                 </span>
               </div>
             </div>
             <span
               style={{
                 fontSize: "12px",
-                fontWeight: 700,
+                fontWeight: 750,
                 background: "#704b73",
-                color: "#fff",
-                padding: "5px 12px",
-                borderRadius: "20px",
+                color: "#ffffff",
+                padding: "4px 12px",
+                borderRadius: "16px",
                 whiteSpace: "nowrap",
               }}
             >
-              $0 FEE WAIVER CONFIRMED
+              $0 EARLY TERMINATION FEE
             </span>
           </div>
         )}
 
-        <div style={{ marginBottom: "26px" }}>
-          <h1 style={{ fontSize: "28px", fontWeight: 800, margin: 0, letterSpacing: "-0.5px" }}>
-            Plans &amp; Subscriptions
-          </h1>
-          <p style={{ color: "#aaa", fontSize: "14px", marginTop: "5px" }}>
-            View your active Creative Cloud licenses, cloud storage quota, and payment methods.
-          </p>
-        </div>
-
+        {/* Primary Adobe Subscription Card (Clean White Spectrum Card) */}
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1.45fr 1fr",
-            gap: "24px",
-            alignItems: "start",
+            background: "#ffffff",
+            borderRadius: "12px",
+            border: "1px solid #e1e1e1",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            padding: "32px",
+            marginBottom: "32px",
           }}
         >
-          {/* Left Column: Plan Details Card */}
           <div
             style={{
-              background: "#252525",
-              borderRadius: "12px",
-              border: "1px solid #363636",
-              padding: "28px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              borderBottom: "1px solid #f0f0f0",
+              paddingBottom: "24px",
+              marginBottom: "24px",
             }}
           >
+            <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
+              <AdobeCreativeCloudLogo size={52} />
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <h2 style={{ fontSize: "24px", fontWeight: 800, margin: 0, color: "#222222" }}>
+                    Creative Cloud All Apps
+                  </h2>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      padding: "2px 8px",
+                      borderRadius: "12px",
+                      background: subStatus === "Active" ? "#e6f9ed" : "#fef2f2",
+                      color: subStatus === "Active" ? "#0f7b3d" : "#b91c1c",
+                      border: `1px solid ${subStatus === "Active" ? "#b7ebd0" : "#fecaca"}`,
+                    }}
+                  >
+                    {subStatus === "Active" ? "Active" : "Cancellation Pending"}
+                  </span>
+                </div>
+                <span style={{ fontSize: "13.5px", color: "#6e6e6e", marginTop: "3px", display: "block" }}>
+                  Annual plan, paid monthly
+                </span>
+              </div>
+            </div>
+
+            {/* Price block */}
+            <div style={{ textAlign: "right" }}>
+              <span style={{ fontSize: "28px", fontWeight: 800, color: "#222222" }}>
+                {claimedDiscount ? "US$29.99" : "US$59.99"}
+              </span>
+              <span style={{ fontSize: "13.5px", color: "#6e6e6e" }}> / mo (incl. taxes)</span>
+              {claimedDiscount && (
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    color: "#0f7b3d",
+                    background: "#e6f9ed",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                    marginTop: "4px",
+                  }}
+                >
+                  50% RETENTION DISCOUNT ACTIVE
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Details Row: Cloud Storage, Renewal, and Payment */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: "24px",
+              marginBottom: "28px",
+              fontSize: "13.5px",
+            }}
+          >
+            {/* Cloud Storage */}
+            <div>
+              <span style={{ color: "#6e6e6e", fontWeight: 600, display: "block", marginBottom: "6px" }}>
+                Cloud storage
+              </span>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "12.5px" }}>
+                <strong>42.8 GB of 100 GB used</strong>
+                <span style={{ color: "#6e6e6e" }}>42%</span>
+              </div>
+              <div style={{ height: "6px", background: "#eaeaea", borderRadius: "3px", overflow: "hidden" }}>
+                <div style={{ width: "42.8%", height: "100%", background: "#0265dc" }} />
+              </div>
+            </div>
+
+            {/* Renewal status */}
+            <div>
+              <span style={{ color: "#6e6e6e", fontWeight: 600, display: "block", marginBottom: "4px" }}>
+                Contract status
+              </span>
+              {subStatus === "Active" ? (
+                <div>
+                  <strong style={{ color: "#222222" }}>Renews on June 28, 2026</strong>
+                  <span style={{ display: "block", fontSize: "12px", color: "#b91c1c", marginTop: "2px" }}>
+                    *Annual commitment (6 months remaining)
+                  </span>
+                </div>
+              ) : (
+                <div>
+                  <strong style={{ color: "#b91c1c" }}>Access ends June 28, 2026</strong>
+                  <span style={{ display: "block", fontSize: "12px", color: "#0f7b3d", marginTop: "2px" }}>
+                    Fee waived by SubSlayer AI ($0.00 charged)
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Payment Method */}
+            <div>
+              <span style={{ color: "#6e6e6e", fontWeight: 600, display: "block", marginBottom: "4px" }}>
+                Payment method
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <CreditCard size={15} color="#505050" />
+                <strong style={{ color: "#222222" }}>Visa ending in {card?.last4 || "4242"}</strong>
+              </div>
+              <span style={{ fontSize: "12px", color: "#6e6e6e" }}>Expires 12/28</span>
+            </div>
+          </div>
+
+          {/* Action Row (Adobe Spectrum Blue Pill buttons & Cancel link) */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingTop: "20px",
+              borderTop: "1px solid #f0f0f0",
+              flexWrap: "wrap",
+              gap: "12px",
+            }}
+          >
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <button
+                style={{
+                  background: "#0265dc",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "20px",
+                  padding: "10px 24px",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = "#0054b6")}
+                onMouseOut={(e) => (e.currentTarget.style.background = "#0265dc")}
+              >
+                Change plan
+              </button>
+
+              <button
+                style={{
+                  background: "#ffffff",
+                  color: "#222222",
+                  border: "1px solid #b3b3b3",
+                  borderRadius: "20px",
+                  padding: "10px 24px",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = "#f5f5f5")}
+                onMouseOut={(e) => (e.currentTarget.style.background = "#ffffff")}
+              >
+                Edit payment details
+              </button>
+            </div>
+
+            {subStatus === "Active" ? (
+              <button
+                onClick={() => {
+                  setMazeStep(1)
+                  setSurveyReason("")
+                  setTypedConfirmation("")
+                  setShowMazeModal(true)
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#0265dc",
+                  fontSize: "14px",
+                  fontWeight: 650,
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                Cancel plan
+              </button>
+            ) : (
+              <span style={{ fontSize: "13.5px", color: "#6e6e6e", fontWeight: 600 }}>
+                Cancellation request submitted
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Included Apps Section (Photoshop, Illustrator, Premiere, etc.) */}
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: "12px",
+            border: "1px solid #e1e1e1",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            padding: "28px",
+            marginBottom: "32px",
+          }}
+        >
+          <h3 style={{ fontSize: "18px", fontWeight: 750, margin: "0 0 16px 0", color: "#222222" }}>
+            Included with Creative Cloud All Apps
+          </h3>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+              gap: "16px",
+            }}
+          >
+            {[
+              { name: "Photoshop", icon: <PhotoshopIcon size={36} /> },
+              { name: "Illustrator", icon: <IllustratorIcon size={36} /> },
+              { name: "Premiere Pro", icon: <PremiereIcon size={36} /> },
+              { name: "After Effects", icon: <AfterEffectsIcon size={36} /> },
+              { name: "InDesign", icon: <InDesignIcon size={36} /> },
+              { name: "Acrobat Pro", icon: <AcrobatIcon size={36} /> },
+            ].map((app) => (
+              <div
+                key={app.name}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  background: "#f9f9f9",
+                  border: "1px solid #ebebeb",
+                }}
+              >
+                {app.icon}
+                <strong style={{ fontSize: "13px", color: "#222222" }}>{app.name}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* SubSlayer Payment Shield & Simulation Controls Card */}
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: "12px",
+            border: `1.5px solid ${isLocked ? "#ef4444" : "#10b981"}`,
+            boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
+            padding: "28px",
+            marginBottom: "32px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "16px",
+            }}
+          >
+            <div>
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#704b73",
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                }}
+              >
+                ACTIVE PAYMENT DEFENSE
+              </span>
+              <h3 style={{ fontSize: "18px", fontWeight: 750, margin: "2px 0 0 0", color: "#222222" }}>
+                SubSlayer Virtual Card Shield (•••• {card?.last4 || "4242"})
+              </h3>
+            </div>
+
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "18px",
+                gap: "6px",
+                background: isLocked ? "#fef2f2" : "#ecfdf5",
+                border: `1px solid ${isLocked ? "#f87171" : "#34d399"}`,
+                color: isLocked ? "#b91c1c" : "#065f46",
+                padding: "6px 14px",
+                borderRadius: "20px",
+                fontSize: "12.5px",
+                fontWeight: 750,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "6px",
-                    background: "#fa0f00",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#fff",
-                    fontWeight: 900,
-                    fontSize: "14px",
-                  }}
-                >
-                  CC
-                </div>
-                <div>
-                  <h2 style={{ fontSize: "20px", fontWeight: 800, margin: 0 }}>
-                    Creative Cloud All Apps
-                  </h2>
-                  <span style={{ fontSize: "12.5px", color: "#aaa" }}>
-                    Annual commitment, paid monthly
-                  </span>
-                </div>
-              </div>
-
-              <span
-                style={{
-                  fontSize: "11.5px",
-                  fontWeight: 700,
-                  padding: "4px 10px",
-                  borderRadius: "12px",
-                  background: subStatus === "Active" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)",
-                  color: subStatus === "Active" ? "#4ade80" : "#f87171",
-                  border: `1px solid ${subStatus === "Active" ? "#22c55e" : "#ef4444"}`,
-                }}
-              >
-                {subStatus === "Active" ? "ACTIVE CONTRACT" : "CANCELLATION PENDING"}
-              </span>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: "8px",
-                marginBottom: "20px",
-                padding: "14px 16px",
-                background: "#1c1c1c",
-                borderRadius: "8px",
-              }}
-            >
-              <span style={{ fontSize: "28px", fontWeight: 800, color: "#fff" }}>
-                {claimedDiscount ? "$29.99" : "$59.99"}
-              </span>
-              <span style={{ color: "#aaa", fontSize: "14px" }}>
-                / month (incl. VAT)
-              </span>
-              {claimedDiscount && (
-                <span
-                  style={{
-                    marginLeft: "auto",
-                    background: "#22c55e",
-                    color: "#000",
-                    fontWeight: 800,
-                    fontSize: "11px",
-                    padding: "2px 8px",
-                    borderRadius: "4px",
-                  }}
-                >
-                  RETENTION 50% DISCOUNT APPLIED
-                </span>
-              )}
-            </div>
-
-            {/* Cloud Storage Usage Bar */}
-            <div style={{ marginBottom: "24px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "12.5px",
-                  marginBottom: "8px",
-                  color: "#ccc",
-                }}
-              >
-                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <HardDrive size={14} /> Cloud Storage
-                </span>
-                <span>
-                  <strong>42.8 GB</strong> of 100 GB used (42%)
-                </span>
-              </div>
-              <div
-                style={{
-                  height: "8px",
-                  background: "#1a1a1a",
-                  borderRadius: "4px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: "42.8%",
-                    height: "100%",
-                    background: "linear-gradient(90deg, #fa0f00 0%, #ff6b6b 100%)",
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Contract Notice */}
-            <div
-              style={{
-                background: "#1c1c1c",
-                borderRadius: "8px",
-                padding: "14px 16px",
-                marginBottom: "24px",
-                fontSize: "13px",
-                lineHeight: 1.55,
-                color: "#ddd",
-                borderLeft: "3px solid #fa0f00",
-              }}
-            >
-              {subStatus === "Active" ? (
-                <>
-                  Contract status: <strong>Annual commitment (6 months remaining)</strong>. Next billing date: <strong>June 28, 2026</strong>.
-                  <span style={{ display: "block", color: "#f87171", fontSize: "12px", marginTop: "4px" }}>
-                    *Standard early cancellation fee: 50% of remaining term ($119.98).
-                  </span>
-                </>
-              ) : (
-                <>
-                  Cancellation processed. Access remains active until <strong>June 28, 2026</strong>. Early termination fee waived by SubSlayer AI defense protocol ($0.00 charged).
-                </>
-              )}
-            </div>
-
-            {/* Included Apps Pill Grid */}
-            <div style={{ marginBottom: "26px" }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#888", textTransform: "uppercase" }}>
-                20+ Creative Apps Included
-              </span>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "6px",
-                  marginTop: "8px",
-                }}
-              >
-                {[
-                  "Photoshop",
-                  "Illustrator",
-                  "Premiere Pro",
-                  "After Effects",
-                  "InDesign",
-                  "Lightroom",
-                  "Acrobat Pro",
-                  "Firefly AI",
-                ].map((app) => (
-                  <span
-                    key={app}
-                    style={{
-                      background: "#1a1a1a",
-                      fontSize: "12px",
-                      padding: "4px 10px",
-                      borderRadius: "4px",
-                      color: "#eee",
-                      border: "1px solid #333",
-                    }}
-                  >
-                    {app}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Interactive Testing Actions */}
-            <div style={{ borderTop: "1px solid #333", paddingTop: "24px", display: "grid", gap: "12px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "#888" }}>
-                  SIMULATE BILLING &amp; AGENT DEFENSE
-                </span>
-                <span style={{ fontSize: "11px", color: "#ff8b82", fontWeight: 700 }}>
-                  DEMO POLICY HUB
-                </span>
-              </div>
-
-              {/* Action 1: Simulate Charge */}
-              <button
-                onClick={handleSimulateRenewal}
-                disabled={charging}
-                style={{
-                  background: "#fa0f00",
-                  color: "#ffffff",
-                  border: "none",
-                  padding: "13px 20px",
-                  borderRadius: "24px",
-                  fontWeight: 750,
-                  fontSize: "14px",
-                  cursor: charging ? "wait" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "9px",
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.background = "#d60d00")}
-                onMouseOut={(e) => (e.currentTarget.style.background = "#fa0f00")}
-              >
-                {charging ? (
-                  <>
-                    <RefreshCw size={16} className="animate-spin" /> Processing $59.99 Adobe Invoice...
-                  </>
-                ) : (
-                  <>
-                    <Flame size={16} /> Simulate Monthly Renewal Charge ($59.99)
-                  </>
-                )}
-              </button>
-
-              {/* Action 2: Trigger SubSlayer AI Fee-Waived Agent */}
-              <button
-                onClick={handleTriggerSubSlayerAgent}
-                disabled={agentTriggering || subStatus === "Cancelled"}
-                style={{
-                  background: subStatus === "Cancelled" ? "#2a2a2a" : "linear-gradient(135deg, #704b73 0%, #4a2d4e 100%)",
-                  color: subStatus === "Cancelled" ? "#777" : "#ffffff",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  padding: "12px 20px",
-                  borderRadius: "24px",
-                  fontWeight: 700,
-                  fontSize: "13.5px",
-                  cursor: agentTriggering || subStatus === "Cancelled" ? "default" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                }}
-              >
-                <Sparkles size={15} />
-                {agentTriggering
-                  ? "Slaying via SubSlayer Agent..."
-                  : subStatus === "Cancelled"
-                  ? "Subscription Already Slayed ($0 Fee)"
-                  : "Slay with SubSlayer AI (Bypass Dark Patterns & Waive Fee)"}
-              </button>
-
-              {/* Action 3: Enter the 4-Step Dark Pattern Maze (Manual Flow) */}
-              {subStatus === "Active" && (
-                <button
-                  onClick={() => {
-                    setMazeStep(1)
-                    setSurveyReason("")
-                    setTypedConfirmation("")
-                    setShowMazeModal(true)
-                  }}
-                  style={{
-                    background: "transparent",
-                    color: "#bbb",
-                    border: "1px solid #444",
-                    padding: "10px 18px",
-                    borderRadius: "24px",
-                    fontWeight: 650,
-                    fontSize: "13px",
-                    cursor: "pointer",
-                    marginTop: "4px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.borderColor = "#fa0f00"
-                    e.currentTarget.style.color = "#ff8b82"
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.borderColor = "#444"
-                    e.currentTarget.style.color = "#bbb"
-                  }}
-                >
-                  <AlertTriangle size={14} /> Experience Adobe Manual Dark Pattern Maze (4 Steps)
-                </button>
-              )}
+              {isLocked ? <Lock size={14} /> : <Unlock size={14} />}
+              {isLocked ? "SHIELD LOCKED ($0.00 LIMIT)" : "SHIELD ACTIVE ($60.00 LIMIT)"}
             </div>
           </div>
 
-          {/* Right Column: Virtual Card Shield & Activity */}
-          <div style={{ display: "grid", gap: "20px" }}>
-            {/* Payment Method Card */}
-            <div
+          <div
+            style={{
+              background: isLocked ? "#fef2f2" : "#f0fdf4",
+              borderRadius: "8px",
+              padding: "14px 16px",
+              fontSize: "13px",
+              lineHeight: 1.5,
+              color: isLocked ? "#991b1b" : "#166534",
+              marginBottom: "20px",
+            }}
+          >
+            {isLocked ? (
+              <span>
+                <strong>Shield Locked:</strong> Recurring Adobe charges and penalty fees of $119.98 are blocked at the gateway before billing occurs.
+              </span>
+            ) : (
+              <span>
+                <strong>Shield Active:</strong> Test charges up to the $60.00 limit will be authorized via Stripe test ledger.
+              </span>
+            )}
+          </div>
+
+          {/* Test Buttons */}
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <button
+              onClick={handleSimulateRenewal}
+              disabled={charging}
               style={{
-                background: "#252525",
-                borderRadius: "12px",
-                border: "1px solid #363636",
-                padding: "24px",
+                background: "#fa0f00",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "20px",
+                padding: "11px 24px",
+                fontSize: "13.5px",
+                fontWeight: 750,
+                cursor: charging ? "wait" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
+              onMouseOver={(e) => (e.currentTarget.style.background = "#d60d00")}
+              onMouseOut={(e) => (e.currentTarget.style.background = "#fa0f00")}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "16px",
-                }}
-              >
-                <h3 style={{ fontSize: "16px", fontWeight: 750, margin: 0 }}>
-                  Billing Card
-                </h3>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    color: "#f87171",
-                    background: "#331215",
-                    border: "1px solid #751b22",
-                    padding: "2px 8px",
-                    borderRadius: "4px",
-                  }}
-                >
-                  CARD_02 (ADOBE DEMO)
-                </span>
-              </div>
-
-              {/* Virtual Card Rendering */}
-              <div
-                style={{
-                  background: isLocked
-                    ? "linear-gradient(135deg, #2b1115 0%, #15090b 100%)"
-                    : "linear-gradient(135deg, #17241b 0%, #0c140f 100%)",
-                  border: `1.5px solid ${isLocked ? "#ef4444" : "#22c55e"}`,
-                  borderRadius: "10px",
-                  padding: "16px 18px",
-                  marginBottom: "16px",
-                  position: "relative",
-                  boxShadow: isLocked
-                    ? "0 4px 20px rgba(239, 68, 68, 0.2)"
-                    : "0 4px 20px rgba(34, 197, 94, 0.15)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff", letterSpacing: "1px" }}>
-                    VISA SIGNATURE
-                  </span>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      color: isLocked ? "#fca5a5" : "#86efac",
-                    }}
-                  >
-                    {isLocked ? <Lock size={12} /> : <Unlock size={12} />}
-                    {isLocked ? "SHIELD LOCKED ($0.00)" : "SHIELD ACTIVE ($60.00)"}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    letterSpacing: "2px",
-                    margin: "18px 0 12px",
-                    fontFamily: "monospace",
-                  }}
-                >
-                  •••• •••• •••• {card?.last4 || "4242"}
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "11.5px",
-                    color: "#888",
-                  }}
-                >
-                  <span>CARDHOLDER: ALEX RIVER</span>
-                  <span>EXP: 12/28</span>
-                </div>
-              </div>
-
-              {/* Shield Status Explainer */}
-              <div
-                style={{
-                  background: "#1c1c1c",
-                  borderRadius: "8px",
-                  padding: "12px 14px",
-                  marginBottom: "16px",
-                  fontSize: "12.5px",
-                  lineHeight: 1.5,
-                  color: "#ccc",
-                }}
-              >
-                {isLocked ? (
-                  <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                    <ShieldAlert size={16} color="#f87171" style={{ flexShrink: 0, marginTop: "2px" }} />
-                    <span>
-                      <strong style={{ color: "#f87171" }}>Card Shield is Locked:</strong> Recurring Adobe charges and penalty fees of $119.98 will be blocked at the gateway before billing.
-                    </span>
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                    <ShieldCheck size={16} color="#22c55e" style={{ flexShrink: 0, marginTop: "2px" }} />
-                    <span>
-                      <strong style={{ color: "#22c55e" }}>Card Shield is Unlocked:</strong> Test charges up to the $60.00 spending limit will be approved via Stripe test mode.
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Toggle Card Lock Button */}
-              <button
-                onClick={handleToggleCardLock}
-                disabled={togglingLock}
-                style={{
-                  width: "100%",
-                  background: isLocked ? "#1e293b" : "#450a0a",
-                  color: isLocked ? "#93c5fd" : "#fca5a5",
-                  border: `1px solid ${isLocked ? "#3b82f6" : "#ef4444"}`,
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  fontSize: "12.5px",
-                  fontWeight: 700,
-                  cursor: togglingLock ? "wait" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "7px",
-                }}
-              >
-                {isLocked ? (
-                  <>
-                    <Unlock size={14} /> Unlock Shield (Allow Charges)
-                  </>
-                ) : (
-                  <>
-                    <Lock size={14} /> Lock Shield to $0.00 (Block Charges)
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Recent Billing Simulation Activity */}
-            <div
-              style={{
-                background: "#252525",
-                borderRadius: "12px",
-                border: "1px solid #363636",
-                padding: "20px 24px",
-              }}
-            >
-              <h3 style={{ fontSize: "14px", fontWeight: 750, margin: "0 0 12px 0", color: "#aaa" }}>
-                RECENT CHARGE SIMULATIONS
-              </h3>
-
-              {chargeHistory.length === 0 ? (
-                <p style={{ color: "#666", fontSize: "12.5px", margin: 0, fontStyle: "italic" }}>
-                  Click &apos;Simulate Monthly Renewal Charge&apos; to test payment shield interception.
-                </p>
+              {charging ? (
+                <>
+                  <RefreshCw size={14} className="animate-spin" /> Charging $59.99...
+                </>
               ) : (
-                <div style={{ display: "grid", gap: "8px" }}>
-                  {chargeHistory.map((item) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        background: "#1c1c1c",
-                        padding: "10px 12px",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        borderLeft: `3px solid ${item.status === "APPROVED" ? "#22c55e" : "#ef4444"}`,
-                      }}
-                    >
-                      <div>
-                        <strong
-                          style={{
-                            color: item.status === "APPROVED" ? "#4ade80" : "#f87171",
-                            display: "block",
-                          }}
-                        >
-                          {item.status === "APPROVED" ? "APPROVED ($59.99)" : "DECLINED ($59.99)"}
-                        </strong>
-                        <span style={{ color: "#777", fontSize: "11px" }}>{item.reason}</span>
-                      </div>
-                      <span style={{ color: "#555", fontSize: "11px", whiteSpace: "nowrap" }}>
-                        {item.timestamp}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <Flame size={14} /> Simulate Monthly Renewal Charge ($59.99)
+                </>
               )}
-            </div>
+            </button>
+
+            <button
+              onClick={handleToggleCardLock}
+              disabled={togglingLock}
+              style={{
+                background: isLocked ? "#1e293b" : "#450a0a",
+                color: isLocked ? "#93c5fd" : "#fca5a5",
+                border: `1px solid ${isLocked ? "#3b82f6" : "#ef4444"}`,
+                borderRadius: "20px",
+                padding: "11px 22px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: togglingLock ? "wait" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "7px",
+              }}
+            >
+              {isLocked ? <Unlock size={14} /> : <Lock size={14} />}
+              {isLocked ? "Unlock Card Shield" : "Lock Card Shield to $0.00"}
+            </button>
+
+            <button
+              onClick={handleTriggerSubSlayerAgent}
+              disabled={agentTriggering || subStatus === "Cancelled"}
+              style={{
+                background: subStatus === "Cancelled" ? "#eaeaea" : "#704b73",
+                color: subStatus === "Cancelled" ? "#888" : "#fff",
+                border: "none",
+                borderRadius: "20px",
+                padding: "11px 22px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: agentTriggering || subStatus === "Cancelled" ? "default" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "7px",
+              }}
+            >
+              <Sparkles size={14} />
+              {subStatus === "Cancelled" ? "Slayed ($0 Penalty Fee)" : "1-Click Slay with SubSlayer AI"}
+            </button>
           </div>
         </div>
       </main>
 
-      {/* 4. Realistic Adobe Charge Outcome Dialog */}
+      {/* 4. Official Adobe Footer */}
+      <footer
+        style={{
+          background: "#ffffff",
+          borderTop: "1px solid #e1e1e1",
+          padding: "24px 36px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          fontSize: "12px",
+          color: "#6e6e6e",
+        }}
+      >
+        <div style={{ display: "flex", gap: "20px" }}>
+          <span>Privacy</span>
+          <span>Terms of Use</span>
+          <span>Cookie preferences</span>
+          <span>Do not sell my personal info</span>
+        </div>
+        <span>Copyright © 2026 Adobe. All rights reserved.</span>
+      </footer>
+
+      {/* 5. Realistic Adobe Charge Outcome Dialog */}
       {chargeResult && (
         <div
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.85)",
+            background: "rgba(0,0,0,0.6)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             padding: "20px",
-            zIndex: 999,
+            zIndex: 9999,
           }}
           onClick={() => setChargeResult(null)}
         >
           <div
             style={{
-              background: "#252525",
-              border: `1.5px solid ${chargeResult.success ? "#22c55e" : "#ef4444"}`,
-              borderRadius: "16px",
+              background: "#ffffff",
+              border: `1.5px solid ${chargeResult.success ? "#10b981" : "#ef4444"}`,
+              borderRadius: "12px",
               padding: "32px",
-              maxWidth: "480px",
+              maxWidth: "460px",
               width: "100%",
-              color: "#fff",
-              boxShadow: "0 20px 50px rgba(0,0,0,0.6)",
+              color: "#222",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1032,8 +994,8 @@ export function AdobeDemoPortal({
                   width: "56px",
                   height: "56px",
                   borderRadius: "50%",
-                  background: chargeResult.success ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)",
-                  color: chargeResult.success ? "#4ade80" : "#f87171",
+                  background: chargeResult.success ? "#ecfdf5" : "#fef2f2",
+                  color: chargeResult.success ? "#10b981" : "#ef4444",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1044,19 +1006,19 @@ export function AdobeDemoPortal({
               </div>
 
               <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 8px 0" }}>
-                {chargeResult.success ? "Adobe Payment Processed" : "Adobe Charge Blocked by Shield"}
+                {chargeResult.success ? "Payment Processed" : "Payment Declined"}
               </h3>
 
-              <p style={{ color: "#aaa", fontSize: "13.5px", lineHeight: 1.5, margin: 0 }}>
+              <p style={{ color: "#6e6e6e", fontSize: "14px", lineHeight: 1.5, margin: 0 }}>
                 {chargeResult.success
-                  ? "Adobe billed $59.99 against Visa ending in 4242 via Stripe test mode."
+                  ? "Adobe billed $59.99 to your SubSlayer virtual card via Stripe test mode."
                   : "Adobe attempted to charge $59.99, but SubSlayer Virtual Card Shield blocked the charge."}
               </p>
             </div>
 
             <div
               style={{
-                background: "#1c1c1c",
+                background: "#f9f9f9",
                 borderRadius: "8px",
                 padding: "14px 16px",
                 marginBottom: "24px",
@@ -1066,40 +1028,34 @@ export function AdobeDemoPortal({
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#888" }}>Status:</span>
-                <strong style={{ color: chargeResult.success ? "#4ade80" : "#f87171" }}>
+                <span style={{ color: "#6e6e6e" }}>Status:</span>
+                <strong style={{ color: chargeResult.success ? "#10b981" : "#ef4444" }}>
                   {chargeResult.status}
                 </strong>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#888" }}>Reason:</span>
+                <span style={{ color: "#6e6e6e" }}>Reason:</span>
                 <span style={{ textAlign: "right", maxWidth: "260px" }}>{chargeResult.reason}</span>
               </div>
               {chargeResult.stripePaymentIntentId && (
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "#888" }}>Stripe Intent:</span>
-                  <span style={{ fontFamily: "monospace", color: "#a5b4fc" }}>
+                  <span style={{ color: "#6e6e6e" }}>Stripe Intent:</span>
+                  <span style={{ fontFamily: "monospace", color: "#0265dc" }}>
                     {chargeResult.stripePaymentIntentId.slice(0, 16)}...
                   </span>
                 </div>
               )}
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#888" }}>Amount Protected:</span>
-                <strong style={{ color: "#fff" }}>
-                  ${(chargeResult.amountBlocked || 59.99).toFixed(2)}
-                </strong>
-              </div>
             </div>
 
             <button
               onClick={() => setChargeResult(null)}
               style={{
                 width: "100%",
-                background: chargeResult.success ? "#fa0f00" : "#ffffff",
-                color: chargeResult.success ? "#ffffff" : "#000000",
+                background: chargeResult.success ? "#fa0f00" : "#222222",
+                color: "#ffffff",
                 border: "none",
                 padding: "12px",
-                borderRadius: "24px",
+                borderRadius: "20px",
                 fontWeight: 750,
                 fontSize: "14px",
                 cursor: "pointer",
@@ -1111,77 +1067,72 @@ export function AdobeDemoPortal({
         </div>
       )}
 
-      {/* 5. The Legendary 4-Step Dark Pattern Maze Simulator Modal */}
+      {/* 6. Authentic Adobe 4-Step Dark Pattern Maze (Spectrum Light Theme) */}
       {showMazeModal && (
         <div
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.88)",
+            background: "rgba(0,0,0,0.7)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             padding: "20px",
-            zIndex: 999,
+            zIndex: 9999,
           }}
           onClick={() => setShowMazeModal(false)}
         >
           <div
             style={{
-              background: "#252525",
-              border: "1px solid #444",
-              borderRadius: "16px",
+              background: "#ffffff",
+              border: "1px solid #d5d5d5",
+              borderRadius: "12px",
               padding: "36px",
-              maxWidth: "580px",
+              maxWidth: "560px",
               width: "100%",
-              color: "#fff",
-              position: "relative",
-              boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
+              color: "#222",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.25)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Step Progress Header */}
+            {/* Header / Step indicator */}
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
                 justifyContent: "space-between",
+                alignItems: "center",
+                paddingBottom: "16px",
+                borderBottom: "1px solid #ebebeb",
                 marginBottom: "20px",
-                borderBottom: "1px solid #363636",
-                paddingBottom: "14px",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span
                   style={{
+                    background: "#fef2f2",
+                    color: "#b91c1c",
                     fontSize: "11px",
                     fontWeight: 800,
-                    color: "#fa0f00",
-                    background: "rgba(250, 15, 0, 0.15)",
                     padding: "3px 8px",
                     borderRadius: "4px",
                   }}
                 >
-                  DARK PATTERN MAZE: STEP {mazeStep} OF 4
+                  STEP {mazeStep} OF 4
                 </span>
-                <span style={{ fontSize: "12px", color: "#888" }}>
+                <span style={{ fontSize: "13px", color: "#6e6e6e" }}>
                   {mazeStep === 1
-                    ? "Asset Threat"
+                    ? "Asset Loss Warning"
                     : mazeStep === 2
-                    ? "Retention Discount Trap"
+                    ? "Retention Offer"
                     : mazeStep === 3
-                    ? "Penalty Fee Shock"
-                    : "Typing Gauntlet"}
+                    ? "Early Termination Fee"
+                    : "Final Confirmation"}
                 </span>
               </div>
+
               <button
                 onClick={() => setShowMazeModal(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#aaa",
-                  cursor: "pointer",
-                }}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#6e6e6e" }}
               >
                 <X size={18} />
               </button>
@@ -1190,21 +1141,21 @@ export function AdobeDemoPortal({
             {/* Persistent SubSlayer AI Contrast Banner */}
             <div
               style={{
-                background: "linear-gradient(135deg, rgba(112, 75, 115, 0.25) 0%, rgba(250, 15, 0, 0.1) 100%)",
-                border: "1px dashed #704b73",
+                background: "#f7f1f8",
+                border: "1.5px dashed #704b73",
                 borderRadius: "8px",
-                padding: "10px 14px",
-                marginBottom: "22px",
+                padding: "12px 16px",
+                marginBottom: "24px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: "10px",
+                gap: "12px",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px" }}>
-                <Sparkles size={16} color="#d4b4db" />
-                <span>
-                  <strong style={{ color: "#f3e8f5" }}>Tired of Adobe&apos;s maze?</strong> SubSlayer AI waives fees in 1 click.
+                <Sparkles size={16} color="#704b73" />
+                <span style={{ color: "#3e2444" }}>
+                  <strong>Skip this maze:</strong> SubSlayer AI waives the $119.98 fee in 1 click.
                 </span>
               </div>
               <button
@@ -1213,152 +1164,148 @@ export function AdobeDemoPortal({
                   background: "#704b73",
                   color: "#fff",
                   border: "none",
-                  padding: "5px 11px",
+                  padding: "6px 14px",
                   borderRadius: "16px",
-                  fontSize: "11.5px",
+                  fontSize: "12px",
                   fontWeight: 700,
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                 }}
               >
-                🚀 Slay with AI ($0 Fee)
+                🚀 Slay ($0 Fee)
               </button>
             </div>
 
-            {/* STEP 1: Loss of Apps & Assets Guilt */}
+            {/* STEP 1: Loss of Apps & Assets Threat */}
             {mazeStep === 1 && (
               <div>
-                <div style={{ textAlign: "center", marginBottom: "22px" }}>
-                  <div
-                    style={{
-                      width: "52px",
-                      height: "52px",
-                      borderRadius: "50%",
-                      background: "rgba(250, 15, 0, 0.15)",
-                      color: "#fa0f00",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      margin: "0 auto 14px",
-                    }}
-                  >
-                    <AlertTriangle size={28} />
-                  </div>
-                  <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 6px 0" }}>
-                    Alex, are you sure you want to cancel?
-                  </h3>
-                  <p style={{ color: "#aaa", fontSize: "13.5px", margin: 0, lineHeight: 1.5 }}>
-                    You will permanently lose access to all Creative Cloud services and synced project assets.
-                  </p>
+                <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 10px 0", color: "#222222" }}>
+                  Alex, are you sure you want to cancel?
+                </h3>
+                <p style={{ fontSize: "14px", color: "#6e6e6e", lineHeight: 1.5, margin: "0 0 20px 0" }}>
+                  You will permanently lose access to all Creative Cloud apps, cloud files, and synced fonts.
+                </p>
+
+                {/* Grayed App Grid */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "10px",
+                    marginBottom: "20px",
+                  }}
+                >
+                  {[
+                    { name: "Photoshop", icon: <PhotoshopIcon size={30} /> },
+                    { name: "Illustrator", icon: <IllustratorIcon size={30} /> },
+                    { name: "Premiere", icon: <PremiereIcon size={30} /> },
+                    { name: "After Effects", icon: <AfterEffectsIcon size={30} /> },
+                    { name: "InDesign", icon: <InDesignIcon size={30} /> },
+                    { name: "Acrobat", icon: <AcrobatIcon size={30} /> },
+                  ].map((app) => (
+                    <div
+                      key={app.name}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "8px 10px",
+                        borderRadius: "6px",
+                        background: "#f5f5f5",
+                        filter: "grayscale(70%)",
+                      }}
+                    >
+                      {app.icon}
+                      <span style={{ fontSize: "12px", fontWeight: 600, color: "#6e6e6e" }}>{app.name}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <div
                   style={{
-                    background: "#1c1c1c",
-                    borderRadius: "10px",
-                    padding: "16px",
+                    background: "#fff8f8",
+                    border: "1px solid #fecaca",
+                    borderRadius: "8px",
+                    padding: "14px",
                     marginBottom: "24px",
                     fontSize: "13px",
+                    color: "#b91c1c",
                   }}
                 >
-                  <span style={{ fontWeight: 700, color: "#fa0f00", display: "block", marginBottom: "8px" }}>
-                    What you will immediately lose:
-                  </span>
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "6px" }}>
-                    <li>❌ Desktop access to 20+ applications (Photoshop, Premiere, Illustrator, etc.)</li>
-                    <li>❌ 42.8 GB Cloud Storage — files will be permanently purged after 30 days</li>
-                    <li>❌ 1,000 monthly Generative AI Firefly credits</li>
-                    <li>❌ 20,000+ Adobe Fonts sync library</li>
+                  <strong>What happens to your work:</strong>
+                  <ul style={{ margin: "6px 0 0 0", paddingLeft: "18px" }}>
+                    <li>42.8 GB cloud files will be locked and permanently deleted after 30 days</li>
+                    <li>1,000 monthly Firefly generative AI credits will expire</li>
+                    <li>Adobe Fonts library will be deactivated across your design files</li>
                   </ul>
                 </div>
 
                 <div style={{ display: "grid", gap: "10px" }}>
-                  {/* Big bold primary button urging user to stay */}
                   <button
                     onClick={() => setShowMazeModal(false)}
                     style={{
                       background: "#0265dc",
                       color: "#ffffff",
                       border: "none",
-                      padding: "13px",
+                      padding: "14px",
                       borderRadius: "24px",
                       fontWeight: 750,
-                      fontSize: "14px",
+                      fontSize: "14.5px",
                       cursor: "pointer",
                     }}
                   >
-                    Keep My Plan (Recommended)
+                    Keep my plan (Recommended)
                   </button>
 
-                  {/* Tiny, faint text link at bottom */}
                   <button
                     onClick={() => setMazeStep(2)}
                     style={{
                       background: "none",
                       border: "none",
-                      color: "#777",
-                      fontSize: "12px",
-                      padding: "8px",
+                      color: "#6e6e6e",
+                      fontSize: "12.5px",
+                      padding: "6px",
                       cursor: "pointer",
                       textDecoration: "underline",
                     }}
-                    onMouseOver={(e) => (e.currentTarget.style.color = "#aaa")}
-                    onMouseOut={(e) => (e.currentTarget.style.color = "#777")}
                   >
-                    ...continue to cancellation (Step 2/4)
+                    Continue to cancellation
                   </button>
                 </div>
               </div>
             )}
 
-            {/* STEP 2: Desperate Discount Trap */}
+            {/* STEP 2: Retention Discount Trap */}
             {mazeStep === 2 && (
               <div>
-                <div style={{ textAlign: "center", marginBottom: "22px" }}>
-                  <div
-                    style={{
-                      width: "52px",
-                      height: "52px",
-                      borderRadius: "50%",
-                      background: "rgba(34, 197, 94, 0.15)",
-                      color: "#22c55e",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      margin: "0 auto 14px",
-                    }}
-                  >
-                    <Zap size={28} />
-                  </div>
-                  <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 6px 0" }}>
-                    Special Limited Offer for Alex
-                  </h3>
-                  <p style={{ color: "#aaa", fontSize: "13.5px", margin: 0, lineHeight: 1.5 }}>
-                    We want you to keep creating. Stay today with an exclusive 50% discount!
-                  </p>
-                </div>
+                <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 8px 0", color: "#222222" }}>
+                  Special Offer Just For You
+                </h3>
+                <p style={{ fontSize: "14px", color: "#6e6e6e", margin: "0 0 20px 0" }}>
+                  We’d hate to see you go. Keep Creative Cloud for 50% off for the next 3 months!
+                </p>
 
                 <div
                   style={{
-                    background: "#1c1c1c",
-                    border: "1.5px solid #22c55e",
+                    background: "#f0fdf4",
+                    border: "1.5px solid #10b981",
                     borderRadius: "10px",
-                    padding: "20px",
+                    padding: "24px",
                     marginBottom: "24px",
                     textAlign: "center",
                   }}
                 >
-                  <span style={{ fontSize: "12px", fontWeight: 800, color: "#22c55e", textTransform: "uppercase" }}>
-                    EXCLUSIVE 50% OFF RETENTION PRICING
+                  <span style={{ fontSize: "12px", fontWeight: 800, color: "#065f46", textTransform: "uppercase" }}>
+                    EXCLUSIVE 50% RETENTION DISCOUNT
                   </span>
-                  <div style={{ fontSize: "32px", fontWeight: 900, color: "#fff", margin: "8px 0" }}>
-                    $29.99{" "}
-                    <span style={{ fontSize: "14px", fontWeight: 500, color: "#888" }}>
-                      / month (Save $90.00)
+                  <div style={{ fontSize: "32px", fontWeight: 900, color: "#111827", margin: "8px 0" }}>
+                    US$29.99{" "}
+                    <span style={{ fontSize: "14px", fontWeight: 500, color: "#6e6e6e" }}>
+                      / month (Save US$90.00)
                     </span>
                   </div>
-                  <p style={{ fontSize: "12.5px", color: "#ccc", margin: 0 }}>
-                    Keep all 20+ apps, 100 GB storage, and Firefly credits for $29.99/mo for the next 3 months.
+                  <p style={{ fontSize: "13px", color: "#374151", margin: 0 }}>
+                    Keep all 20+ apps, 100 GB storage, and Firefly AI credits for only $29.99/mo.
                   </p>
                 </div>
 
@@ -1369,17 +1316,17 @@ export function AdobeDemoPortal({
                       setShowMazeModal(false)
                     }}
                     style={{
-                      background: "#22c55e",
-                      color: "#000000",
+                      background: "#0265dc",
+                      color: "#ffffff",
                       border: "none",
-                      padding: "13px",
+                      padding: "14px",
                       borderRadius: "24px",
-                      fontWeight: 800,
-                      fontSize: "14px",
+                      fontWeight: 750,
+                      fontSize: "14.5px",
                       cursor: "pointer",
                     }}
                   >
-                    Claim 50% Discount &amp; Stay
+                    Accept offer &amp; Keep Plan
                   </button>
 
                   <button
@@ -1387,67 +1334,65 @@ export function AdobeDemoPortal({
                     style={{
                       background: "none",
                       border: "none",
-                      color: "#777",
-                      fontSize: "12px",
-                      padding: "8px",
+                      color: "#6e6e6e",
+                      fontSize: "12.5px",
+                      padding: "6px",
                       cursor: "pointer",
                       textDecoration: "underline",
                     }}
-                    onMouseOver={(e) => (e.currentTarget.style.color = "#aaa")}
-                    onMouseOut={(e) => (e.currentTarget.style.color = "#777")}
                   >
-                    ...no thanks, continue to cancel (Step 3/4)
+                    No thanks, continue to cancel
                   </button>
                 </div>
               </div>
             )}
 
-            {/* STEP 3: Early Termination Penalty Fee Shock */}
+            {/* STEP 3: Early Termination Fee Warning */}
             {mazeStep === 3 && (
               <div>
-                <div style={{ textAlign: "center", marginBottom: "22px" }}>
+                <div style={{ textAlign: "center", marginBottom: "16px" }}>
                   <div
                     style={{
                       width: "52px",
                       height: "52px",
                       borderRadius: "50%",
-                      background: "rgba(250, 15, 0, 0.2)",
-                      color: "#fa0f00",
+                      background: "#fffbeb",
+                      color: "#b45309",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      margin: "0 auto 14px",
+                      margin: "0 auto 12px",
                     }}
                   >
-                    <AlertCircle size={28} />
+                    <AlertTriangle size={28} />
                   </div>
-                  <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 6px 0" }}>
-                    Early Termination Fee Warning
+                  <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 6px 0", color: "#222222" }}>
+                    Early Cancellation Fee Warning
                   </h3>
-                  <p style={{ color: "#aaa", fontSize: "13.5px", margin: 0, lineHeight: 1.5 }}>
-                    Your contract requires an early cancellation penalty fee.
+                  <p style={{ fontSize: "13.5px", color: "#6e6e6e", margin: 0 }}>
+                    Your annual contract specifies an early termination fee.
                   </p>
                 </div>
 
                 <div
                   style={{
-                    background: "#2d1115",
-                    border: "1.5px solid #fa0f00",
-                    borderRadius: "10px",
-                    padding: "18px",
+                    background: "#fffbeb",
+                    border: "1.5px solid #f59e0b",
+                    borderRadius: "8px",
+                    padding: "20px",
                     marginBottom: "24px",
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                    <span style={{ fontSize: "13px", color: "#fca5a5", fontWeight: 700 }}>
-                      Contract Penalty Amount:
+                    <span style={{ fontSize: "14px", fontWeight: 700, color: "#92400e" }}>
+                      Penalty Fee Due Today:
                     </span>
-                    <span style={{ fontSize: "22px", fontWeight: 900, color: "#fff" }}>
-                      $119.98
+                    <span style={{ fontSize: "24px", fontWeight: 900, color: "#78350f" }}>
+                      US$119.98
                     </span>
                   </div>
-                  <p style={{ fontSize: "12px", color: "#fca5a5", margin: 0, lineHeight: 1.5 }}>
-                    Because your contract is an Annual commitment with 6 months remaining, your terms of service require 50% of your remaining balance ($119.98). This fee will be charged today to your card ending in 4242.
+                  <p style={{ fontSize: "12.5px", color: "#92400e", margin: 0, lineHeight: 1.5 }}>
+                    Because you have 6 months remaining in your annual commitment, cancelling early requires a 50% contract termination fee (US$119.98), which will be charged immediately to your card ending in 4242.
                   </p>
                 </div>
 
@@ -1458,14 +1403,14 @@ export function AdobeDemoPortal({
                       background: "#0265dc",
                       color: "#ffffff",
                       border: "none",
-                      padding: "13px",
+                      padding: "14px",
                       borderRadius: "24px",
                       fontWeight: 750,
-                      fontSize: "14px",
+                      fontSize: "14.5px",
                       cursor: "pointer",
                     }}
                   >
-                    Switch to a Cheaper Plan Instead
+                    Switch to a cheaper plan instead
                   </button>
 
                   <button
@@ -1473,67 +1418,61 @@ export function AdobeDemoPortal({
                     style={{
                       background: "none",
                       border: "none",
-                      color: "#777",
-                      fontSize: "12px",
-                      padding: "8px",
+                      color: "#6e6e6e",
+                      fontSize: "12.5px",
+                      padding: "6px",
                       cursor: "pointer",
                       textDecoration: "underline",
                     }}
-                    onMouseOver={(e) => (e.currentTarget.style.color = "#aaa")}
-                    onMouseOut={(e) => (e.currentTarget.style.color = "#777")}
                   >
-                    ...acknowledge $119.98 fee and proceed (Step 4/4)
+                    Acknowledge US$119.98 fee and proceed
                   </button>
                 </div>
               </div>
             )}
 
-            {/* STEP 4: Mandatory Survey & Typing Confirmation Friction */}
+            {/* STEP 4: Survey & Typing Confirmation Friction */}
             {mazeStep === 4 && (
               <div>
-                <h3 style={{ fontSize: "20px", fontWeight: 800, margin: "0 0 12px 0" }}>
-                  Final Confirmation &amp; Survey
+                <h3 style={{ fontSize: "20px", fontWeight: 800, margin: "0 0 12px 0", color: "#222222" }}>
+                  Why are you cancelling?
                 </h3>
 
-                <div style={{ marginBottom: "18px" }}>
-                  <span style={{ fontSize: "12.5px", fontWeight: 700, color: "#aaa", display: "block", marginBottom: "8px" }}>
-                    Why are you cancelling? (Required)
-                  </span>
-                  <div style={{ display: "grid", gap: "6px" }}>
-                    {[
-                      "Too expensive for my budget",
-                      "Switching to another tool (Canva, Figma)",
-                      "Not using it frequently enough",
-                      "Software is buggy or slow",
-                    ].map((reason) => (
-                      <label
-                        key={reason}
-                        style={{
-                          background: "#1c1c1c",
-                          padding: "8px 12px",
-                          borderRadius: "6px",
-                          fontSize: "12.5px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name="reason"
-                          checked={surveyReason === reason}
-                          onChange={() => setSurveyReason(reason)}
-                        />
-                        {reason}
-                      </label>
-                    ))}
-                  </div>
+                <div style={{ display: "grid", gap: "8px", marginBottom: "20px" }}>
+                  {[
+                    "Too expensive for my budget",
+                    "Switching to another tool (Canva, Figma)",
+                    "Not using it frequently enough",
+                    "Software is buggy or slow",
+                  ].map((reason) => (
+                    <label
+                      key={reason}
+                      style={{
+                        background: "#f9f9f9",
+                        border: "1px solid #e1e1e1",
+                        padding: "10px 14px",
+                        borderRadius: "6px",
+                        fontSize: "13px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="cancel_reason"
+                        checked={surveyReason === reason}
+                        onChange={() => setSurveyReason(reason)}
+                      />
+                      <span>{reason}</span>
+                    </label>
+                  ))}
                 </div>
 
                 <div style={{ marginBottom: "24px" }}>
-                  <span style={{ fontSize: "12.5px", fontWeight: 700, color: "#f87171", display: "block", marginBottom: "6px" }}>
-                    To confirm and authorize the $119.98 fee, type CANCEL below:
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#b91c1c", display: "block", marginBottom: "6px" }}>
+                    To confirm and authorize the US$119.98 fee, type CANCEL below:
                   </span>
                   <input
                     type="text"
@@ -1543,10 +1482,8 @@ export function AdobeDemoPortal({
                     style={{
                       width: "100%",
                       padding: "10px 14px",
-                      background: "#1c1c1c",
-                      border: "1px solid #444",
+                      border: "1px solid #ccc",
                       borderRadius: "6px",
-                      color: "#fff",
                       fontSize: "14px",
                       fontFamily: "monospace",
                     }}
@@ -1559,25 +1496,19 @@ export function AdobeDemoPortal({
                     disabled={!surveyReason || typedConfirmation !== "CANCEL"}
                     style={{
                       background:
-                        surveyReason && typedConfirmation === "CANCEL"
-                          ? "#fa0f00"
-                          : "#3a2022",
+                        surveyReason && typedConfirmation === "CANCEL" ? "#b91c1c" : "#e5e7eb",
                       color:
-                        surveyReason && typedConfirmation === "CANCEL"
-                          ? "#ffffff"
-                          : "#888",
+                        surveyReason && typedConfirmation === "CANCEL" ? "#ffffff" : "#9ca3af",
                       border: "none",
-                      padding: "13px",
+                      padding: "14px",
                       borderRadius: "24px",
                       fontWeight: 750,
                       fontSize: "14px",
                       cursor:
-                        surveyReason && typedConfirmation === "CANCEL"
-                          ? "pointer"
-                          : "not-allowed",
+                        surveyReason && typedConfirmation === "CANCEL" ? "pointer" : "not-allowed",
                     }}
                   >
-                    Confirm Cancellation &amp; Bill $119.98
+                    Confirm Cancellation &amp; Bill US$119.98
                   </button>
 
                   <button
@@ -1585,7 +1516,7 @@ export function AdobeDemoPortal({
                     style={{
                       background: "none",
                       border: "none",
-                      color: "#aaa",
+                      color: "#6e6e6e",
                       fontSize: "13px",
                       padding: "6px",
                       cursor: "pointer",

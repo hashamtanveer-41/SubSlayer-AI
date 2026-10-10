@@ -286,3 +286,111 @@ export function CanvaLogo({ size = 24, ...props }: PlatformLogoProps) {
     </svg>
   )
 }
+
+// 12. SPOTIFY WORDMARK: Circular green icon + "Spotify" text
+export function SpotifyWordmark({ height = 28 }: { height?: number }) {
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+      <SpotifyLogo size={height} />
+      <span
+        style={{
+          color: "#ffffff",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'Circular Std', 'DM Sans', sans-serif",
+          fontWeight: 800,
+          fontSize: `${height * 0.72}px`,
+          letterSpacing: "-0.5px",
+        }}
+      >
+        Spotify
+      </span>
+    </div>
+  )
+}
+
+// 13. ADOBE CREATIVE CLOUD OFFICIAL LOGO
+export function AdobeCreativeCloudLogo({ size = 36 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <defs>
+        <linearGradient id="adobe-cc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FA0F00" />
+          <stop offset="45%" stopColor="#D8147E" />
+          <stop offset="70%" stopColor="#8A2BE2" />
+          <stop offset="100%" stopColor="#0265DC" />
+        </linearGradient>
+      </defs>
+      <rect width="48" height="48" rx="10" fill="url(#adobe-cc-grad)" />
+      {/* Infinity ribbon inside CC icon */}
+      <path
+        d="M20.5 18C16.9 18 14 20.9 14 24.5C14 28.1 16.9 31 20.5 31C23.1 31 25.3 29.5 26.4 27.2C25.4 26.5 24.5 25.7 23.8 24.9C23 25.8 21.8 26.4 20.5 26.4C19.5 26.4 18.6 25.6 18.6 24.5C18.6 23.4 19.5 22.6 20.5 22.6C21.7 22.6 22.7 23.2 23.3 24.1C24.4 23 25.8 21.9 27.4 21.2C25.9 19.3 23.4 18 20.5 18ZM27.5 18C26.1 18 24.8 18.4 23.6 19.1C24.5 20.1 25.6 21.2 26.8 22.3C27.1 22.1 27.5 22 28 22C29.4 22 30.5 23.1 30.5 24.5C30.5 25.9 29.4 27 28 27C27.5 27 27.1 26.9 26.8 26.7C25.7 27.8 24.6 28.9 23.6 29.9C24.8 30.6 26.1 31 27.5 31C31.1 31 34 28.1 34 24.5C34 20.9 31.1 18 27.5 18Z"
+        fill="#FFFFFF"
+      />
+    </svg>
+  )
+}
+
+// 14. ADOBE APP TILES
+export function PhotoshopIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="6" fill="#001E36" />
+      <text x="16" y="21" fill="#31A8FF" fontSize="13" fontWeight="800" fontFamily="sans-serif" textAnchor="middle">
+        Ps
+      </text>
+    </svg>
+  )
+}
+
+export function IllustratorIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="6" fill="#330000" />
+      <text x="16" y="21" fill="#FF9A00" fontSize="13" fontWeight="800" fontFamily="sans-serif" textAnchor="middle">
+        Ai
+      </text>
+    </svg>
+  )
+}
+
+export function PremiereIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="6" fill="#00005B" />
+      <text x="16" y="21" fill="#9999FF" fontSize="13" fontWeight="800" fontFamily="sans-serif" textAnchor="middle">
+        Pr
+      </text>
+    </svg>
+  )
+}
+
+export function AfterEffectsIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="6" fill="#00005B" />
+      <text x="16" y="21" fill="#9999FF" fontSize="13" fontWeight="800" fontFamily="sans-serif" textAnchor="middle">
+        Ae
+      </text>
+    </svg>
+  )
+}
+
+export function InDesignIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="6" fill="#49021F" />
+      <text x="16" y="21" fill="#FF3366" fontSize="13" fontWeight="800" fontFamily="sans-serif" textAnchor="middle">
+        Id
+      </text>
+    </svg>
+  )
+}
+
+export function AcrobatIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="6" fill="#ED2224" />
+      <path d="M10 23C13 21 15 15 16 9C17 15 19 21 22 23C18 22 14 22 10 23Z" fill="#FFFFFF" />
+    </svg>
+  )
+}
+
