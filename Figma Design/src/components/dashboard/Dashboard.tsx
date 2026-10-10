@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { Plus } from "lucide-react"
 import {
+  analyzeSubscriptionApi,
   getSubscriptionsApi,
   getVirtualCards,
   toggleCardLockApi,
+  type AiAnalysisResult,
 } from "../../services/api"
 import type { DashboardSection, Subscription, User, VirtualCard } from "../../types"
 import { monthly } from "../../utils/formatters"
@@ -11,6 +13,7 @@ import { AgentExecutionModal } from "../agent/AgentExecutionModal"
 import { VirtualCardsView } from "../cards/VirtualCardsView"
 import { Toast } from "../common/Toast"
 import { Button } from "../ui/Button"
+import { toast } from "../ui"
 import { AddEditSubscriptionDialog } from "./AddEditSubscriptionDialog"
 import { ControlCard } from "./ControlCard"
 import { DashboardHeader } from "./DashboardHeader"
@@ -53,6 +56,9 @@ export function Dashboard({
   const [notice, setNotice] = useState("")
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [renewalsOpen, setRenewalsOpen] = useState(false)
+  const [aiInsight, setAiInsight] = useState<AiAnalysisResult | null>(null)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzingSubId, setAnalyzingSubId] = useState<string | null>(null)
 
   // Sync with live FastAPI backend on initial mount
   useEffect(() => {
@@ -179,6 +185,34 @@ export function Dashboard({
     )
   }
 
+  async function handleAnalyze(sub: Subscription) {
+    setAnalyzing(true)
+    setAnalyzingSubId(sub.id)
+    const toastId = toast.loading("Analyzing with AI...", {
+      description: `Evaluating ${sub.name} (${sub.category}) for recurring vampire traits...`,
+    })
+
+    try {
+      const result = await analyzeSubscriptionApi(sub)
+      setAiInsight(result)
+      setSubscriptions(
+        subscriptions.map((s) => (s.id === sub.id ? { ...s, vampireScore: result.riskScore } : s)),
+      )
+      toast.success("AI Analysis Complete", {
+        id: toastId,
+        description: result.formattedSummary,
+      })
+    } catch (err: any) {
+      toast.error("Analysis unavailable", {
+        id: toastId,
+        description: err?.message || "AI analysis unavailable",
+      })
+    } finally {
+      setAnalyzing(false)
+      setAnalyzingSubId(null)
+    }
+  }
+
   return (
     <div className="dashboard">
       <Sidebar
@@ -253,6 +287,9 @@ export function Dashboard({
               <InsightBanner
                 active={active}
                 onOpenCancel={(sub) => setSelectedForCancel(sub)}
+                onAnalyze={handleAnalyze}
+                analyzing={analyzing}
+                insight={aiInsight}
               />
               <SubscriptionsTable
                 section={section}
@@ -268,6 +305,8 @@ export function Dashboard({
                 }}
                 onOpenCancel={(sub) => setSelectedForCancel(sub)}
                 onRestore={handleRestoreSubscription}
+                onAnalyze={handleAnalyze}
+                analyzingSubId={analyzingSubId}
               />
               <div className="dashboard-lower">
                 <UpcomingRenewalsCard renewals={sortedRenewals} />
@@ -293,6 +332,8 @@ export function Dashboard({
               onOpenCancel={(sub) => setSelectedForCancel(sub)}
               onRestore={handleRestoreSubscription}
               onViewProof={(sub) => setSelectedForCancel(sub)}
+              onAnalyze={handleAnalyze}
+              analyzingSubId={analyzingSubId}
             />
           )}
 

@@ -26,6 +26,8 @@ export interface SubscriptionsTableProps {
   onOpenCancel: (sub: Subscription) => void
   onRestore: (sub: Subscription) => void
   onViewProof?: (sub: Subscription) => void
+  onAnalyze?: (sub: Subscription) => void
+  analyzingSubId?: string | null
 }
 
 export function SubscriptionsTable({
@@ -40,6 +42,8 @@ export function SubscriptionsTable({
   onOpenCancel,
   onRestore,
   onViewProof,
+  onAnalyze,
+  analyzingSubId,
 }: SubscriptionsTableProps) {
   const isHistory = section === "Cancellation history"
 
@@ -161,6 +165,21 @@ export function SubscriptionsTable({
                   <div className="row-actions">
                     {s.status === "Active" ? (
                       <>
+                        {onAnalyze && (
+                          <Button
+                            variant="ghost"
+                            loading={analyzingSubId === s.id}
+                            onClick={() => onAnalyze(s)}
+                            title={`Analyze ${s.name} with AI`}
+                            aria-label={`Analyze ${s.name} with AI`}
+                            style={{
+                              color: "var(--accent)",
+                              padding: "6px 8px",
+                            }}
+                          >
+                            <Sparkles size={14} />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           onClick={() => onEdit(s)}

@@ -276,6 +276,66 @@ export async function getSubscriptionsApi(): Promise<Subscription[]> {
   return await res.json()
 }
 
+export interface AiAnalysisResult {
+  riskScore: number
+  reason: string
+  monthlySavingsCents: number
+  annualSavingsDollars: number
+  formattedSummary: string
+  model: string
+}
+
+// 3b. AI Subscription Analysis (Qwen / LLM Intelligence)
+export async function analyzeSubscriptionApi(sub: Subscription): Promise<AiAnalysisResult> {
+  const rawProvider = (sub.provider || sub.name || "canva").toLowerCase()
+  const matchedProvider =
+    ["netflix", "spotify", "canva", "adobe"].find((p) => rawProvider.includes(p)) || "canva"
+  const monthlyCostCents = Math.round((sub.cycle === "Yearly" ? sub.price / 12 : sub.price) * 100)
+
+  const res = await fetch(`${API_BASE_URL}/api/ai/analyze`, {
+    method: "POST",
+    credentials: "include",
+    signal: AbortSignal.timeout(35000),
+    headers: getAuthHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({
+      provider: matchedProvider,
+      monthly_cost_cents: monthlyCostCents,
+      category: sub.category,
+      user_note: "Evaluating recurring subscription value and vampire traits",
+    }),
+  })
+
+  if (!res.ok) throw await responseError(res)
+  const result = await res.json()
+  const raw = result.analysis
+  let riskScore = (sub.vampireScore ?? 65)
+  let reason = typeof raw === "string" ? raw : "High recurring cost with vampire traits."
+  let monthlySavingsCents = monthlyCostCents
+
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw)
+      if (typeof parsed.risk_score === "number") riskScore = parsed.risk_score
+      if (typeof parsed.reason === "string") reason = parsed.reason
+      if (typeof parsed.monthly_savings_cents === "number") monthlySavingsCents = parsed.monthly_savings_cents
+    } catch {
+      // Plain text response fallback
+    }
+  }
+
+  const annualSavingsDollars = (monthlySavingsCents * 12) / 100
+  const formattedSummary = `${reason} (Vampire Risk: ${riskScore}/100)`
+
+  return {
+    riskScore,
+    reason,
+    monthlySavingsCents,
+    annualSavingsDollars,
+    formattedSummary,
+    model: result.model || "qwen3.8-flash",
+  }
+}
+
 // 4. Autonomous Agent Cancellation
 export async function startCancellationAgentApi(
   subscriptionId: string,
