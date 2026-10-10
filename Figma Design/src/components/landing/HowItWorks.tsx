@@ -7,7 +7,7 @@ export function HowItWorks() {
     <section className="how-section" id="how-it-works">
       <div className="section-heading">
         <div>
-          <span className="eyebrow">ACTIVE AGENTIC INTERVENTION</span>
+          <span className="eyebrow">HOW IT WORKS</span>
           <h2>
             From vampire drain
             <br />
@@ -17,7 +17,7 @@ export function HowItWorks() {
         <p>
           No more calling customer support.
           <br />
-          No more clicking through 8 pages of discount bribes.
+          No more clicking through complex retention screens.
         </p>
       </div>
       <div className="steps">
@@ -26,10 +26,9 @@ export function HowItWorks() {
             <span>01 / DETECT</span>
             <Wallet size={22} />
           </div>
-          <h3>Ingest & Uncover.</h3>
+          <h3>Detect Subscriptions</h3>
           <p>
-            Upload your statement or sync transactions. Our AI scans for forgotten,
-            price-hiked, and unused vampire subscriptions.
+            Sync accounts or upload statements to identify all active recurring charges.
           </p>
           <div className="step-visual connect-visual">
             {seedSubscriptions.slice(0, 4).map((s) => (
@@ -45,10 +44,9 @@ export function HowItWorks() {
             <span>02 / ANALYZE</span>
             <SlidersHorizontal size={22} />
           </div>
-          <h3>Vampire Risk Scoring.</h3>
+          <h3>Analyze Spending</h3>
           <p>
-            Instantly see total annualized waste. Flag highest-cost services and
-            preview immediate reclaimed cash.
+            Review renewal dates, price changes, and calculated yearly spend for each service.
           </p>
           <div className="step-visual discover-visual">
             <span>Potential yearly savings</span>
@@ -68,20 +66,19 @@ export function HowItWorks() {
         </article>
         <article className="step">
           <div className="step-top">
-            <span>03 / SLAY & SHIELD</span>
+            <span>03 / CANCEL</span>
             <Sparkles size={22} />
           </div>
-          <h3>Autonomous Cancellation.</h3>
+          <h3>Cancel Automatically</h3>
           <p>
-            Hit "Cancel via AI". Our headless browser agent bypasses dark retention
-            patterns, cancels the plan, and delivers photographic proof.
+            Select any unwanted service, and our AI browser agent completes the cancellation with verified proof.
           </p>
           <div className="step-visual unloop-visual">
             <span className="agent-symbol">
               <Sparkles size={18} />
             </span>
             <div>
-              <strong>Auto-cancelled in seconds.</strong>
+              <strong>Cancelled in seconds.</strong>
               <span>Proof screenshot captured.</span>
             </div>
             <Check size={18} />
@@ -89,8 +86,7 @@ export function HowItWorks() {
         </article>
       </div>
       <div className="demo-disclosure">
-        <CircleHelp size={14} /> Hackathon demo preview connects to simulated
-        or live headless AI agent sessions with photographic DOM verification.
+        <CircleHelp size={14} /> Demonstrates automated cancellation with browser sessions and DOM verification.
       </div>
     </section>
   )

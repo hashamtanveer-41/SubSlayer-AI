@@ -1,5 +1,4 @@
 import {
-  ChevronDown,
   CircleHelp,
   CirclePause,
   CreditCard,
@@ -7,7 +6,6 @@ import {
   LogOut,
   Shield,
   SlidersHorizontal,
-  Sparkles,
 } from "lucide-react"
 import type { DashboardSection } from "../../types"
 import { Brand } from "../common/Brand"
@@ -57,72 +55,46 @@ export function Sidebar({
             setSection("Overview")
             setSidebarOpen(false)
           }}
-          showBadge
         />
-        <div className="workspace">
-          <span className="workspace-avatar">
-            {name.charAt(0).toUpperCase()}
-          </span>
-          <div>
-            <strong>Personal Workspace</strong>
-            <span>Active Financial Defense</span>
-          </div>
-          <ChevronDown size={15} />
-        </div>
-        <span className="nav-label">CONTROL CENTER</span>
+        <span className="nav-label" style={{ marginTop: "24px" }}>CONTROL CENTER</span>
         <nav className="dashboard-nav">
           {navItems.map(({ label, icon: Icon }) => (
             <Button
               key={label}
               variant="ghost"
               className={section === label ? "selected" : ""}
+              title={label}
               onClick={() => {
                 setSection(label)
                 setSidebarOpen(false)
               }}
             >
-              <Icon size={18} />
-              {label}
+              <Icon size={18} className="nav-icon" />
+              <span className="nav-label-text">{label}</span>
               {label === "Subscriptions" && (
                 <span className="nav-count">{activeCount}</span>
               )}
             </Button>
           ))}
         </nav>
-        <div className="sidebar-note">
-          <span className="agent-symbol">
-            <Sparkles size={20} />
-          </span>
-          <strong>AI Assassin Standing By.</strong>
-          <p>Ready to deploy browser agents to auto-cancel vampire subscriptions.</p>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setSection("Subscriptions")
-              setSidebarOpen(false)
-            }}
-          >
-            Review Subscriptions
-          </Button>
-        </div>
         <div className="sidebar-bottom">
-          <Button variant="ghost" onClick={onOpenSettings}>
-            <SlidersHorizontal size={18} />
-            Preferences
+          <Button variant="ghost" title="Preferences" onClick={onOpenSettings}>
+            <SlidersHorizontal size={18} className="nav-icon" />
+            <span className="nav-label-text">Preferences</span>
           </Button>
-          <Button variant="ghost" onClick={onOpenHelp}>
-            <CircleHelp size={18} />
-            How Agent Works
+          <Button variant="ghost" title="How Agent Works" onClick={onOpenHelp}>
+            <CircleHelp size={18} className="nav-icon" />
+            <span className="nav-label-text">How Agent Works</span>
           </Button>
           <div className="sidebar-profile">
-            <span className="profile-avatar">
+            <span className="profile-avatar" title={name}>
               {name.charAt(0).toUpperCase()}
             </span>
-            <div>
+            <div className="sidebar-profile-info">
               <strong>{name}</strong>
               <span>Demo Account</span>
             </div>
-            <Button variant="ghost" aria-label="Log out" onClick={logout}>
+            <Button variant="ghost" aria-label="Log out" title="Log out" onClick={logout} className="logout-button">
               <LogOut size={17} />
             </Button>
           </div>

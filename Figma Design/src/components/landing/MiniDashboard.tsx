@@ -1,4 +1,4 @@
-import { ArrowUpRight, ChevronDown, Sparkles } from "lucide-react"
+import { ArrowUpRight, ChevronDown } from "lucide-react"
 import { seedSubscriptions } from "../../data/seedData"
 import { money } from "../../utils/formatters"
 import { ProviderIcon } from "../common/ProviderIcon"
@@ -53,12 +53,9 @@ export function MiniDashboard() {
         </div>
       ))}
       <div className="mini-agent">
-        <span className="agent-symbol">
-          <Sparkles size={15} />
-        </span>
         <div>
-          <strong>Autonomous agent ready to intervene.</strong>
-          <span>Slay vampire subscriptions with one click.</span>
+          <strong>Automated cancellation available.</strong>
+          <span>Cancel unwanted subscriptions with one click.</span>
         </div>
         <ArrowUpRight size={17} />
       </div>

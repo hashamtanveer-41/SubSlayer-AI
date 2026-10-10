@@ -31,9 +31,6 @@ export function DashboardHeader({
         <strong>{section}</strong>
       </div>
       <div>
-        <span className="demo-pill">
-          <span /> Live Agent Ready
-        </span>
         <Button
           variant="ghost"
           aria-label="Upcoming renewals"
@@ -41,9 +38,6 @@ export function DashboardHeader({
         >
           <Bell size={19} />
         </Button>
-        <span className="profile-avatar">
-          {name.charAt(0).toUpperCase()}
-        </span>
       </div>
     </header>
   )

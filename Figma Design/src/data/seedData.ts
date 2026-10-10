@@ -141,8 +141,8 @@ export const landingFaqs: [string, string][] = [
     "SubSlayer deploys an autonomous Vision-LLM browser agent. Using secure pre-authenticated session tokens, the agent navigates the target website, identifies dark patterns (like hidden links and retention discount popups), and completes the cancellation—saving you time and frustration.",
   ],
   [
-    "What is the Privacy.com-style Virtual Card Shield?",
-    "For stubborn subscriptions that make cancellation difficult or require a phone call, SubSlayer lets you generate on-demand virtual cards. You can toggle the balance to $0.00 at any time. When the merchant attempts to bill you, the charge is rejected immediately without touching your real bank account.",
+    "How does the Virtual Card Payment Shield work?",
+    "For subscriptions with stubborn cancellation policies or forced phone calls, SubSlayer pairs with card-issuing controls. You can set a card's spending limit to $0.00 or lock it. When the merchant attempts to bill you, the transaction is rejected at the network level, safeguarding your primary bank account.",
   ],
   [
     "Do you store or ask for my real bank passwords?",

@@ -25,6 +25,7 @@ export function Brand({ light = false, onClick, showBadge = false }: BrandProps)
     >
       <SubSlayerLogo size={32} glow={!light} />
       <span
+        className="brand-text"
         style={{
           display: "inline-flex",
           alignItems: "baseline",
@@ -45,24 +46,6 @@ export function Brand({ light = false, onClick, showBadge = false }: BrandProps)
           .ai
         </span>
       </span>
-
-      {showBadge && (
-        <span
-          style={{
-            fontSize: "9px",
-            letterSpacing: "0.5px",
-            fontWeight: 700,
-            textTransform: "uppercase",
-            background: light ? "rgba(255,255,255,0.2)" : "rgba(114, 85, 110, 0.12)",
-            color: light ? "#ffffff" : "var(--accent)",
-            padding: "2px 7px",
-            borderRadius: "6px",
-            border: light ? "1px solid rgba(255,255,255,0.3)" : "1px solid rgba(114, 85, 110, 0.2)",
-          }}
-        >
-          AGENT
-        </span>
-      )}
     </Button>
   )
 }

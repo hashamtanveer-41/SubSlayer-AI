@@ -1,4 +1,4 @@
-import { ArrowUpRight, Check, CircleCheck, Play, ShieldCheck, Sparkles } from "lucide-react"
+import { ArrowUpRight, Check, CircleCheck, Play, ShieldCheck } from "lucide-react"
 import type { Page } from "../../types"
 import { Button } from "../ui/Button"
 import { MiniDashboard } from "./MiniDashboard"
@@ -11,27 +11,16 @@ export function LandingHero({ navigate }: LandingHeroProps) {
   return (
     <section className="hero">
       <div className="hero-copy">
-        <div className="eyebrow">
-          <span className="tiny-star">
-            <Sparkles size={13} />
-          </span>{" "}
-          AUTONOMOUS AI SUBSCRIPTION ASSASSIN
-        </div>
         <h1>
           Your subscriptions.
           <br />
           Your money.
           <br />
           <span>Slayed on command.</span>
-          <span className="hero-asterisk" aria-hidden="true" style={{ color: "var(--accent)", fontSize: "40px" }}>
-            *
-          </span>
         </h1>
         <p>
-          The average consumer leaks $219/month on auto-renewing trials and hidden fees.
-          <br className="desktop-break" /> SubSlayer detects your vampire subscriptions,
-          outsmarts retention dark patterns,
-          <br className="desktop-break" /> and deploys an autonomous AI agent to physically cancel them for you.
+          Connect your accounts to detect recurring charges, identify forgotten subscriptions,
+          <br className="desktop-break" /> and let an AI browser agent cancel them for you in seconds.
         </p>
         <div className="hero-actions">
           <Button onClick={() => navigate("signup")}>
@@ -69,9 +58,6 @@ export function LandingHero({ navigate }: LandingHeroProps) {
           <span className="float-saving">
             +$59.99<span>/month back</span>
           </span>
-        </div>
-        <div className="visual-caption">
-          <span className="caption-line" /> Pure agentic control over your recurring cash.
         </div>
       </div>
     </section>
