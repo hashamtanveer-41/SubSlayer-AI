@@ -1,10 +1,10 @@
-import uuid
 import os
+import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Optional
 from app.services.providers.base import BaseProviderAdapter
-from app.demo_common import PROVIDERS
 from app.services.providers.remote import RemoteProviderAdapter
+from app.demo_common import PROVIDERS
 
 class _InMemoryIdempotencyStore:
     def __init__(self):
@@ -27,7 +27,7 @@ class CanvaAdapter(BaseProviderAdapter):
         return {
             "provider": self.provider_code,
             "providerSubscriptionId": provider_sub_id,
-            "plan": "Canva Pro (Team / Individual)",
+            "plan": "Canva Pro",
             "status": "active",
             "currentPeriodEnd": "2026-06-28",
         }
@@ -46,12 +46,12 @@ class CanvaAdapter(BaseProviderAdapter):
         effective_date = (datetime.now(timezone.utc) + timedelta(days=28)).strftime("%Y-%m-%d")
         
         result = {
-            "status": "success",
+            "status": "cancelled",
             "provider": self.provider_code,
             "providerRequestId": req_id,
-            "providerStatus": "cancellation_scheduled",
+            "providerStatus": "cancelled",
             "effectiveDate": effective_date,
-            "message": "Cancellation scheduled by Canva demo API. Access remains active until period end.",
+            "message": "Canva Pro cancelled. Your team account remains available on the free plan.",
             "evidenceType": "provider_demo_api_response",
             "auditLog": {
                 "endpoint": "https://api.canva.demo/v1/billing/subscriptions/cancel",
@@ -68,7 +68,7 @@ class CanvaAdapter(BaseProviderAdapter):
         return {
             "provider": self.provider_code,
             "providerRequestId": provider_request_id,
-            "status": "cancellation_scheduled"
+            "status": "cancelled"
         }
 
 
@@ -80,7 +80,7 @@ class NetflixAdapter(BaseProviderAdapter):
         return {
             "provider": self.provider_code,
             "providerSubscriptionId": provider_sub_id,
-            "plan": "Standard (Ad-Free)",
+            "plan": "Standard",
             "status": "active",
             "currentPeriodEnd": "2026-06-24",
         }
@@ -99,7 +99,7 @@ class NetflixAdapter(BaseProviderAdapter):
         effective_date = (datetime.now(timezone.utc) + timedelta(days=14)).strftime("%Y-%m-%d")
         
         result = {
-            "status": "success",
+            "status": "scheduled",
             "provider": self.provider_code,
             "providerRequestId": req_id,
             "providerStatus": "cancellation_scheduled",
@@ -133,7 +133,7 @@ class SpotifyAdapter(BaseProviderAdapter):
         return {
             "provider": self.provider_code,
             "providerSubscriptionId": provider_sub_id,
-            "plan": "Spotify Premium Individual",
+            "plan": "Premium Individual",
             "status": "active",
             "currentPeriodEnd": "2026-06-26",
         }
@@ -152,7 +152,7 @@ class SpotifyAdapter(BaseProviderAdapter):
         effective_date = (datetime.now(timezone.utc) + timedelta(days=16)).strftime("%Y-%m-%d")
         
         result = {
-            "status": "success",
+            "status": "scheduled",
             "provider": self.provider_code,
             "providerRequestId": req_id,
             "providerStatus": "cancellation_scheduled",
@@ -205,12 +205,12 @@ class AdobeAdapter(BaseProviderAdapter):
         effective_date = (datetime.now(timezone.utc) + timedelta(days=18)).strftime("%Y-%m-%d")
         
         result = {
-            "status": "success",
+            "status": "pending",
             "provider": self.provider_code,
             "providerRequestId": req_id,
-            "providerStatus": "cancellation_scheduled",
+            "providerStatus": "pending",
             "effectiveDate": effective_date,
-            "message": "Adobe Creative Cloud plan cancelled via demo API. Early termination fee waived by policy.",
+            "message": "Adobe Creative Cloud cancellation request is pending verification.",
             "evidenceType": "provider_demo_api_response",
             "auditLog": {
                 "endpoint": "https://api.adobe.demo/v2/plans/cancel",
@@ -227,7 +227,7 @@ class AdobeAdapter(BaseProviderAdapter):
         return {
             "provider": self.provider_code,
             "providerRequestId": provider_request_id,
-            "status": "cancellation_scheduled"
+            "status": "pending"
         }
 
 
@@ -235,6 +235,7 @@ class ProviderAdapterRegistry:
     """
     Factory & Registry for Provider Adapters (OCP).
     Enforces that only supported demo providers (netflix, spotify, canva, adobe) are executed.
+    Supports both local fixtures (zero network) and remote device adapters seamlessly.
     """
     _adapters: Dict[str, BaseProviderAdapter] = {
         "canva": CanvaAdapter(),
@@ -248,8 +249,9 @@ class ProviderAdapterRegistry:
         name = provider.lower().strip()
         if name not in PROVIDERS:
             return None
-        if os.getenv("PROVIDER_MODE", "remote").lower() == "fixture":
-            return cls._adapters[name]
+        mode = os.getenv("PROVIDER_MODE", "").lower()
+        if mode == "fixture" or not os.getenv(f"{name.upper()}_API_URL"):
+            return cls._adapters.get(name)
         return RemoteProviderAdapter(name)
 
     @classmethod
