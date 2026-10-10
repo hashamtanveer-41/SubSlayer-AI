@@ -2,6 +2,9 @@ import { useEffect, useState } from "react"
 import { Dashboard } from "./components/dashboard/Dashboard"
 import { Landing } from "./components/landing/Landing"
 import { LoginPage } from "./components/auth/LoginPage"
+import { SpotifyDemoPortal } from "./components/demo-sites/SpotifyDemoPortal"
+import { AdobeDemoPortal } from "./components/demo-sites/AdobeDemoPortal"
+import { SandboxSplitView } from "./components/demo-sites/SandboxSplitView"
 import { Toaster, toast } from "./components/ui"
 import { seedSubscriptions, seedVirtualCards } from "./data/seedData"
 import { getMeApi, logoutApi } from "./services/api"
@@ -15,6 +18,9 @@ export default function App() {
     if (hash === "app") return "app"
     if (hash === "login") return "login"
     if (hash === "signup") return "signup"
+    if (hash === "demo-spotify") return "demo-spotify"
+    if (hash === "demo-adobe") return "demo-adobe"
+    if (hash === "sandbox") return "sandbox"
     return "landing"
   }
 
@@ -212,6 +218,48 @@ export default function App() {
           navigate={navigate}
           onSuccess={handleAuthSuccess}
         />
+      ) : page === "demo-spotify" ? (
+        <SpotifyDemoPortal
+          onNavigate={navigate}
+          onOpenSplit={() => navigate("sandbox")}
+          currentSubscription={subscriptions.find(
+            (s) => s.provider === "spotify" || s.name.toLowerCase().includes("spotify"),
+          )}
+          onSubscriptionUpdated={(sub) =>
+            setSubscriptions(subscriptions.map((s) => (s.id === sub.id ? sub : s)))
+          }
+          virtualCard={virtualCards.find(
+            (c) => c.id === "card_01" || c.merchant?.toLowerCase().includes("streaming"),
+          )}
+          onCardUpdated={(c) =>
+            setVirtualCards(virtualCards.map((item) => (item.id === c.id ? c : item)))
+          }
+        />
+      ) : page === "demo-adobe" ? (
+        <AdobeDemoPortal
+          onNavigate={navigate}
+          onOpenSplit={() => navigate("sandbox")}
+          currentSubscription={subscriptions.find(
+            (s) => s.provider === "adobe" || s.name.toLowerCase().includes("adobe"),
+          )}
+          onSubscriptionUpdated={(sub) =>
+            setSubscriptions(subscriptions.map((s) => (s.id === sub.id ? sub : s)))
+          }
+          virtualCard={virtualCards.find(
+            (c) => c.id === "card_02" || c.merchant?.toLowerCase().includes("adobe"),
+          )}
+          onCardUpdated={(c) =>
+            setVirtualCards(virtualCards.map((item) => (item.id === c.id ? c : item)))
+          }
+        />
+      ) : page === "sandbox" ? (
+        <SandboxSplitView
+          onNavigate={navigate}
+          subscriptions={subscriptions}
+          setSubscriptions={setSubscriptions}
+          virtualCards={virtualCards}
+          setVirtualCards={setVirtualCards}
+        />
       ) : page === "app" ? (
         <Dashboard
           name={currentUser?.name || name}
@@ -222,6 +270,7 @@ export default function App() {
           setVirtualCards={setVirtualCards}
           onResetSeedData={resetSeedData}
           logout={handleLogout}
+          onNavigate={navigate}
         />
       ) : (
         <Landing
@@ -233,3 +282,4 @@ export default function App() {
     </>
   )
 }
+

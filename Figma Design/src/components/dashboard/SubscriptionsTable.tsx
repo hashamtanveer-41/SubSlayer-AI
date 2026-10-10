@@ -8,7 +8,7 @@ import {
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react"
-import type { DashboardSection, Subscription } from "../../types"
+import type { DashboardSection, Page, Subscription } from "../../types"
 import { formatDate, money } from "../../utils/formatters"
 import { ProviderIcon } from "../common/ProviderIcon"
 import { Button } from "../ui/Button"
@@ -28,6 +28,7 @@ export interface SubscriptionsTableProps {
   onViewProof?: (sub: Subscription) => void
   onAnalyze?: (sub: Subscription) => void
   analyzingSubId?: string | null
+  onNavigate?: (p: Page) => void
 }
 
 export function SubscriptionsTable({
@@ -44,6 +45,7 @@ export function SubscriptionsTable({
   onViewProof,
   onAnalyze,
   analyzingSubId,
+  onNavigate,
 }: SubscriptionsTableProps) {
   const isHistory = section === "Cancellation history"
 
@@ -180,6 +182,42 @@ export function SubscriptionsTable({
                             <Sparkles size={14} />
                           </Button>
                         )}
+                        {(s.provider === "spotify" || s.name.toLowerCase().includes("spotify")) && onNavigate && (
+                          <Button
+                            variant="ghost"
+                            onClick={() => onNavigate("demo-spotify")}
+                            title="Open Spotify Demo Portal"
+                            aria-label="Open Spotify Demo Portal"
+                            style={{
+                              color: "#1ed760",
+                              fontWeight: 700,
+                              fontSize: "11.5px",
+                              padding: "4px 8px",
+                              background: "rgba(30, 215, 96, 0.08)",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            Demo ↗
+                          </Button>
+                        )}
+                        {(s.provider === "adobe" || s.name.toLowerCase().includes("adobe")) && onNavigate && (
+                          <Button
+                            variant="ghost"
+                            onClick={() => onNavigate("demo-adobe")}
+                            title="Open Adobe Dark Pattern Maze"
+                            aria-label="Open Adobe Dark Pattern Maze"
+                            style={{
+                              color: "#fa0f00",
+                              fontWeight: 700,
+                              fontSize: "11.5px",
+                              padding: "4px 8px",
+                              background: "rgba(250, 15, 0, 0.08)",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            Maze ↗
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           onClick={() => onEdit(s)}
@@ -199,6 +237,7 @@ export function SubscriptionsTable({
                           <Sparkles size={13} />
                           Auto-Cancel <ArrowUpRight size={14} />
                         </Button>
+
                       </>
                     ) : (
                       <div style={{ display: "flex", gap: "6px" }}>

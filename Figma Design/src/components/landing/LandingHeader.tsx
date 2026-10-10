@@ -201,12 +201,62 @@ export function LandingHeader({
                 </>
               )}
             </div>
+            <Button
+              variant="secondary"
+              onClick={() => navigate("sandbox")}
+              style={{
+                fontSize: "13px",
+                fontWeight: 650,
+                borderRadius: "20px",
+                padding: "8px 14px",
+                background: "rgba(112, 75, 115, 0.08)",
+                borderColor: "#d8cbdc",
+                color: "#5b3c5e",
+                gap: "6px",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "#10b981",
+                  display: "inline-block",
+                }}
+              />
+              Live Sandboxes
+            </Button>
             <Button onClick={() => navigate("app")} style={{ marginLeft: "4px" }}>
               Launch App <ArrowUpRight size={16} />
             </Button>
           </div>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Button
+              variant="secondary"
+              onClick={() => navigate("sandbox")}
+              style={{
+                fontSize: "13px",
+                fontWeight: 650,
+                borderRadius: "20px",
+                padding: "8px 14px",
+                background: "rgba(112, 75, 115, 0.08)",
+                borderColor: "#d8cbdc",
+                color: "#5b3c5e",
+                gap: "6px",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "#10b981",
+                  display: "inline-block",
+                }}
+              />
+              Live Sandboxes
+            </Button>
             <Button variant="ghost" onClick={() => navigate("login")}>
               Log in
             </Button>
@@ -215,6 +265,7 @@ export function LandingHeader({
             </Button>
           </div>
         )}
+
       </div>
     </header>
   )

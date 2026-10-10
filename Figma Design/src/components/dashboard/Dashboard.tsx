@@ -7,7 +7,7 @@ import {
   toggleCardLockApi,
   type AiAnalysisResult,
 } from "../../services/api"
-import type { DashboardSection, Subscription, User, VirtualCard } from "../../types"
+import type { DashboardSection, Page, Subscription, User, VirtualCard } from "../../types"
 import { monthly } from "../../utils/formatters"
 import { AgentExecutionModal } from "../agent/AgentExecutionModal"
 import { VirtualCardsView } from "../cards/VirtualCardsView"
@@ -34,6 +34,7 @@ export interface DashboardProps {
   setVirtualCards: (cards: VirtualCard[]) => void
   onResetSeedData: () => void
   logout: () => void
+  onNavigate?: (p: Page) => void
 }
 
 export function Dashboard({
@@ -45,6 +46,7 @@ export function Dashboard({
   setVirtualCards,
   onResetSeedData,
   logout,
+  onNavigate,
 }: DashboardProps) {
   const [section, setSection] = useState<DashboardSection>("Overview")
   const [search, setSearch] = useState("")
@@ -228,6 +230,7 @@ export function Dashboard({
           setNotice("Choose an active subscription and click Auto-Cancel to deploy the AI agent.")
         }
         logout={logout}
+        onNavigate={onNavigate}
       />
 
       <div className="dashboard-main">
@@ -237,7 +240,9 @@ export function Dashboard({
           section={section}
           onToggleSidebar={() => setSidebarOpen(true)}
           onOpenRenewals={() => setRenewalsOpen(true)}
+          onNavigate={onNavigate}
         />
+
 
         <main className="dashboard-content">
           <div className="dashboard-title">
@@ -307,6 +312,7 @@ export function Dashboard({
                 onRestore={handleRestoreSubscription}
                 onAnalyze={handleAnalyze}
                 analyzingSubId={analyzingSubId}
+                onNavigate={onNavigate}
               />
               <div className="dashboard-lower">
                 <UpcomingRenewalsCard renewals={sortedRenewals} />
@@ -334,8 +340,10 @@ export function Dashboard({
               onViewProof={(sub) => setSelectedForCancel(sub)}
               onAnalyze={handleAnalyze}
               analyzingSubId={analyzingSubId}
+              onNavigate={onNavigate}
             />
           )}
+
 
           {/* Section: Virtual Cards Shield (Feature 2) */}
           {section === "Virtual cards shield" && (

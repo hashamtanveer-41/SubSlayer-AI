@@ -71,7 +71,14 @@ export type CancelAgentResponse = {
   streamUrl: string
 }
 
-export type Page = "landing" | "login" | "signup" | "app"
+export type Page =
+  | "landing"
+  | "login"
+  | "signup"
+  | "app"
+  | "demo-spotify"
+  | "demo-adobe"
+  | "sandbox"
 
 export type User = {
   id: string

@@ -276,6 +276,23 @@ export async function getSubscriptionsApi(): Promise<Subscription[]> {
   return await res.json()
 }
 
+export async function updateSubscriptionApi(
+  subscriptionId: string,
+  updates: Partial<Subscription>,
+): Promise<Subscription> {
+  const res = await fetch(`${API_BASE_URL}/api/subscriptions/${subscriptionId}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: getAuthHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(updates),
+  })
+  if (!res.ok) {
+    throw await responseError(res)
+  }
+  return await res.json()
+}
+
+
 export interface AiAnalysisResult {
   riskScore: number
   reason: string

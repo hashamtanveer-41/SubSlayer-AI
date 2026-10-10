@@ -2,12 +2,13 @@ import {
   CircleHelp,
   CirclePause,
   CreditCard,
+  FlaskConical,
   LayoutDashboard,
   LogOut,
   Shield,
   SlidersHorizontal,
 } from "lucide-react"
-import type { DashboardSection, User } from "../../types"
+import type { DashboardSection, Page, User } from "../../types"
 import { Brand } from "../common/Brand"
 import { Button } from "../ui/Button"
 
@@ -22,6 +23,7 @@ export interface SidebarProps {
   onOpenSettings: () => void
   onOpenHelp: () => void
   logout: () => void
+  onNavigate?: (p: Page) => void
 }
 
 export function Sidebar({
@@ -35,6 +37,7 @@ export function Sidebar({
   onOpenSettings,
   onOpenHelp,
   logout,
+  onNavigate,
 }: SidebarProps) {
   const navItems: { label: DashboardSection; icon: typeof LayoutDashboard }[] = [
     { label: "Overview", icon: LayoutDashboard },
@@ -78,6 +81,36 @@ export function Sidebar({
               )}
             </Button>
           ))}
+          <Button
+            variant="ghost"
+            title="Provider Sandboxes (Live Demo Sites)"
+            onClick={() => {
+              setSidebarOpen(false)
+              onNavigate?.("sandbox")
+            }}
+            style={{
+              marginTop: "4px",
+              border: "1px dashed #d8cbdc",
+              background: "rgba(112, 75, 115, 0.04)",
+            }}
+          >
+            <FlaskConical size={18} className="nav-icon" style={{ color: "var(--accent)" }} />
+            <span className="nav-label-text">Provider Sandboxes</span>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontSize: "9px",
+                fontWeight: 800,
+                background: "#10b981",
+                color: "#ffffff",
+                padding: "2px 5px",
+                borderRadius: "4px",
+                lineHeight: 1,
+              }}
+            >
+              LIVE
+            </span>
+          </Button>
         </nav>
         <div className="sidebar-bottom">
           <Button variant="ghost" title="Preferences" onClick={onOpenSettings}>
