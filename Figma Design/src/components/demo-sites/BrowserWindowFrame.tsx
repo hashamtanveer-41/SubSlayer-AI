@@ -2,18 +2,12 @@ import { ReactNode } from "react"
 import {
   ArrowLeft,
   ArrowRight,
-  Flame,
-  Globe,
   Lock,
-  Maximize2,
-  RefreshCw,
   RotateCw,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
   Sparkles,
   Unlock,
 } from "lucide-react"
+import { Brand } from "../common/Brand"
 
 export interface BrowserWindowFrameProps {
   url: string
@@ -21,7 +15,7 @@ export interface BrowserWindowFrameProps {
   provider: "spotify" | "adobe"
   isLocked: boolean
   onToggleLock: () => void
-  onSimulateCharge: () => void
+  onSimulateCharge?: () => void
   onRunAgent: () => void
   isCharging?: boolean
   isAgentRunning?: boolean
@@ -37,17 +31,14 @@ export function BrowserWindowFrame({
   provider,
   isLocked,
   onToggleLock,
-  onSimulateCharge,
   onRunAgent,
-  isCharging,
   isAgentRunning,
   isCancelled,
   onBackToHub,
   onSwitchProvider,
   children,
 }: BrowserWindowFrameProps) {
-  const providerPrice = provider === "spotify" ? "$10.99" : "$59.99"
-  const otherProviderName = provider === "spotify" ? "Adobe CC ($59.99)" : "Spotify ($10.99)"
+  const otherProviderName = provider === "spotify" ? "Adobe CC" : "Spotify"
 
   return (
     <div
@@ -55,143 +46,152 @@ export function BrowserWindowFrame({
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        background: "#0c0a0e",
-        color: "#ffffff",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        background: "var(--color-paper, #f8f7f8)",
+        color: "var(--color-ink, #302b32)",
+        fontFamily: "var(--font-sans), 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-      {/* 1. SubSlayer Live Agent Control Dock */}
-      <div
+      {/* 1. SubSlayer Clean Top Navigation Bar */}
+      <header
         style={{
-          background: "linear-gradient(90deg, #18111e 0%, #24162a 50%, #150f1b 100%)",
-          borderBottom: "1px solid #3d2345",
-          padding: "10px 20px",
+          background: "#ffffff",
+          borderBottom: "1px solid var(--color-line, #e8e4e6)",
+          padding: "0 28px",
+          height: "64px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "12px",
-          fontSize: "13px",
           position: "sticky",
           top: 0,
-          zIndex: 1000,
+          zIndex: 100,
+          boxShadow: "0 1px 3px rgba(48, 43, 50, 0.03)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        {/* Left: SubSlayer Brand & Back Link */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <Brand onClick={onBackToHub} />
+
+          <div style={{ width: "1px", height: "20px", background: "#e8e4e6" }} />
+
           <button
             onClick={onBackToHub}
             style={{
-              background: "#704b73",
+              background: "transparent",
               border: "none",
-              color: "#fff",
-              padding: "6px 14px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 700,
+              color: "var(--color-muted, #817a83)",
+              fontSize: "13px",
+              fontWeight: 550,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               gap: "6px",
+              padding: "6px 8px",
+              borderRadius: "6px",
+              transition: "color 0.15s, background 0.15s",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.color = "var(--color-ink, #302b32)"
+              e.currentTarget.style.background = "#f7f1fa"
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.color = "var(--color-muted, #817a83)"
+              e.currentTarget.style.background = "transparent"
             }}
           >
             <ArrowLeft size={14} /> Back to Dashboard
           </button>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span
-              style={{
-                display: "inline-block",
-                width: "8px",
-                height: "8px",
-                borderRadius: "50%",
-                background: "#10b981",
-                boxShadow: "0 0 8px #10b981",
-              }}
-            />
-            <strong style={{ fontSize: "13px", color: "#f3e8f5" }}>
-              SubSlayer Live Sandbox
-            </strong>
-            <span style={{ color: "#a592aa", fontSize: "12px" }}>
-              • Target: {provider.toUpperCase()} (Visa •••• 4242)
-            </span>
-          </div>
         </div>
 
-        {/* Live Interaction Controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+        {/* Center: Minimal Environment Tag */}
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "7px",
+            background: "#f7f1fa",
+            border: "1px solid #e6daed",
+            padding: "5px 14px",
+            borderRadius: "20px",
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "var(--accent, #72556e)",
+          }}
+        >
+          <span
+            style={{
+              width: "7px",
+              height: "7px",
+              borderRadius: "50%",
+              background: "#72556e",
+              display: "inline-block",
+            }}
+          />
+          <span>Simulated Environment: {provider === "spotify" ? "Spotify Premium" : "Adobe Creative Cloud"}</span>
+        </div>
+
+        {/* Right: SubSlayer Controls (Clean & Uncluttered) */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {/* Card Shield Button */}
           <button
             onClick={onToggleLock}
             style={{
-              background: isLocked ? "#450a0a" : "#064e3b",
-              border: `1px solid ${isLocked ? "#ef4444" : "#10b981"}`,
-              color: isLocked ? "#fca5a5" : "#6ee7b7",
-              padding: "6px 13px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 700,
+              background: isLocked ? "#fef2f2" : "#f7f1fa",
+              border: `1px solid ${isLocked ? "#fecaca" : "#e6daed"}`,
+              color: isLocked ? "#b91c1c" : "var(--accent, #72556e)",
+              padding: "7px 13px",
+              borderRadius: "7px",
+              fontSize: "12.5px",
+              fontWeight: 600,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               gap: "6px",
+              transition: "background 0.15s",
             }}
             title="Toggle SubSlayer Virtual Card Shield lock"
           >
             {isLocked ? <Lock size={13} /> : <Unlock size={13} />}
-            {isLocked ? "Shield: LOCKED ($0.00)" : "Shield: ACTIVE"}
+            <span>{isLocked ? "Shield: LOCKED ($0.00)" : "Shield: ACTIVE"}</span>
           </button>
 
-          {/* Test Renewal Charge Button */}
-          <button
-            onClick={onSimulateCharge}
-            disabled={isCharging}
-            style={{
-              background: "#251829",
-              border: "1px solid #5a3861",
-              color: "#f3e8f5",
-              padding: "6px 13px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 700,
-              cursor: isCharging ? "wait" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-            title="Simulate monthly recurring charge from this merchant"
-          >
-            {isCharging ? <RefreshCw size={13} className="animate-spin" /> : <Flame size={13} color="#f59e0b" />}
-            {isCharging ? "Charging..." : `Test ${providerPrice} Charge`}
-          </button>
-
-          {/* Run Agent Cancellation Button */}
+          {/* Autonomous Cancellation Agent Button */}
           <button
             onClick={onRunAgent}
             disabled={isAgentRunning || isCancelled}
             style={{
-              background: isCancelled
-                ? "#252028"
-                : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-              border: "none",
-              color: isCancelled ? "#888" : "#ffffff",
-              padding: "6px 16px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 800,
+              background: isCancelled ? "#f0ebf2" : "var(--accent, #72556e)",
+              color: isCancelled ? "#817a83" : "#ffffff",
+              border: isCancelled ? "1px solid #e8e4e6" : "none",
+              padding: "8px 16px",
+              borderRadius: "7px",
+              fontSize: "13px",
+              fontWeight: 600,
               cursor: isAgentRunning || isCancelled ? "default" : "pointer",
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              boxShadow: isCancelled ? "none" : "0 2px 10px rgba(16, 185, 129, 0.3)",
+              transition: "background 0.15s",
             }}
-            title="Deploy SubSlayer browser agent to cancel this subscription"
+            onMouseOver={(e) => {
+              if (!isCancelled && !isAgentRunning) {
+                e.currentTarget.style.background = "var(--accent-dark, #5b4058)"
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!isCancelled && !isAgentRunning) {
+                e.currentTarget.style.background = "var(--accent, #72556e)"
+              }
+            }}
+            title="Deploy SubSlayer AI browser agent to cancel this subscription"
           >
-            <Sparkles size={13} />
-            {isAgentRunning
-              ? "Agent Running..."
-              : isCancelled
-              ? "Slayed by AI"
-              : "▶ Run AI Cancellation Agent"}
+            <Sparkles size={14} />
+            <span>
+              {isCancelled
+                ? "Subscription Slayed ✓"
+                : isAgentRunning
+                ? "Agent Running..."
+                : "⚡ Auto-Cancel with AI"}
+            </span>
           </button>
 
           {/* Switch to other provider demo */}
@@ -199,43 +199,46 @@ export function BrowserWindowFrame({
             <button
               onClick={onSwitchProvider}
               style={{
-                background: "rgba(255,255,255,0.08)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                color: "#e2d7e5",
-                padding: "6px 12px",
-                borderRadius: "6px",
+                background: "#ffffff",
+                border: "1px solid var(--color-line, #e8e4e6)",
+                color: "var(--color-ink, #302b32)",
+                padding: "7px 12px",
+                borderRadius: "7px",
                 fontSize: "12px",
-                fontWeight: 600,
+                fontWeight: 550,
                 cursor: "pointer",
+                transition: "background 0.15s",
               }}
+              onMouseOver={(e) => (e.currentTarget.style.background = "#f8f7f8")}
+              onMouseOut={(e) => (e.currentTarget.style.background = "#ffffff")}
             >
               Switch to {otherProviderName} →
             </button>
           )}
         </div>
-      </div>
+      </header>
 
       {/* 2. Realistic Desktop Browser Frame */}
       <div
         style={{
-          margin: "16px auto 32px",
-          maxWidth: "1280px",
-          width: "calc(100% - 32px)",
+          margin: "24px auto 48px",
+          maxWidth: "1160px",
+          width: "calc(100% - 48px)",
           borderRadius: "12px",
           overflow: "hidden",
-          border: "1px solid #33283b",
-          boxShadow: "0 25px 70px rgba(0, 0, 0, 0.6)",
-          background: provider === "spotify" ? "#121212" : "#f5f5f5",
+          border: "1px solid var(--color-line, #e8e4e6)",
+          boxShadow: "0 10px 32px rgba(48, 43, 50, 0.08)",
+          background: provider === "spotify" ? "#121212" : "#ffffff",
           display: "flex",
           flexDirection: "column",
         }}
       >
-        {/* Browser Top Window Bar */}
+        {/* Browser Top Window Chrome */}
         <div
           style={{
-            background: "#1e1824",
-            borderBottom: "1px solid #2e2436",
-            padding: "10px 16px",
+            background: "#fcfbfa",
+            borderBottom: "1px solid var(--color-line, #e8e4e6)",
+            padding: "9px 16px",
             display: "flex",
             alignItems: "center",
             gap: "14px",
@@ -243,43 +246,43 @@ export function BrowserWindowFrame({
         >
           {/* Mac-style Window Controls */}
           <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-            <span style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#ff5f56", display: "inline-block" }} />
-            <span style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#ffbd2e", display: "inline-block" }} />
-            <span style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#27c93f", display: "inline-block" }} />
+            <span style={{ width: "11px", height: "11px", borderRadius: "50%", background: "#ff5f56", display: "inline-block" }} />
+            <span style={{ width: "11px", height: "11px", borderRadius: "50%", background: "#ffbd2e", display: "inline-block" }} />
+            <span style={{ width: "11px", height: "11px", borderRadius: "50%", background: "#27c93f", display: "inline-block" }} />
           </div>
 
           {/* Navigation Controls */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#8a7e91" }}>
-            <ArrowLeft size={14} style={{ cursor: "pointer" }} />
-            <ArrowRight size={14} style={{ cursor: "pointer", opacity: 0.5 }} />
-            <RotateCw size={13} style={{ cursor: "pointer", marginLeft: "2px" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#817a83" }}>
+            <ArrowLeft size={13} style={{ cursor: "pointer" }} />
+            <ArrowRight size={13} style={{ cursor: "pointer", opacity: 0.4 }} />
+            <RotateCw size={12} style={{ cursor: "pointer", marginLeft: "2px" }} />
           </div>
 
           {/* Realistic Address Bar */}
           <div
             style={{
               flex: 1,
-              maxWidth: "700px",
-              background: "#120e17",
-              border: "1px solid #33283b",
-              borderRadius: "20px",
+              maxWidth: "680px",
+              background: "#f3eff5",
+              border: "1px solid #e8e0e9",
+              borderRadius: "7px",
               padding: "5px 14px",
               display: "flex",
               alignItems: "center",
               gap: "8px",
               fontSize: "12.5px",
-              color: "#d1c7d6",
+              color: "#302b32",
               margin: "0 auto",
             }}
           >
-            <Lock size={12} color="#10b981" />
-            <span style={{ color: "#ffffff", fontWeight: 600 }}>{url}</span>
-            <span style={{ marginLeft: "auto", fontSize: "11px", color: "#7a6e82" }}>
+            <Lock size={12} color="var(--accent, #72556e)" />
+            <span style={{ color: "#302b32", fontWeight: 550 }}>{url}</span>
+            <span style={{ marginLeft: "auto", fontSize: "11px", color: "#817a83" }}>
               SSL Secured
             </span>
           </div>
 
-          <div style={{ width: "60px" }} />
+          <div style={{ width: "50px" }} />
         </div>
 
         {/* Browser Web Content Container */}

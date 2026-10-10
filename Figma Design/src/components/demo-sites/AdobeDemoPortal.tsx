@@ -596,7 +596,30 @@ export function AdobeDemoPortal({
                 <CreditCard size={15} color="#555555" />
                 <strong style={{ color: "#222222" }}>Visa ending in {card?.last4 || "4242"}</strong>
               </div>
-              <span style={{ fontSize: "12px", color: "#666666" }}>Expires 12/28</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "6px" }}>
+                <span style={{ fontSize: "12px", color: "#666666" }}>Expires 12/28</span>
+                <button
+                  onClick={handleSimulateRenewal}
+                  disabled={charging}
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #d0d0d0",
+                    color: "#222222",
+                    borderRadius: "20px",
+                    padding: "4px 10px",
+                    fontSize: "11.5px",
+                    fontWeight: 600,
+                    cursor: charging ? "wait" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                  }}
+                  title="Simulate monthly Adobe renewal charge"
+                >
+                  {charging ? <RefreshCw size={11} className="animate-spin" /> : <Flame size={11} color="#fa0f00" />}
+                  {charging ? "Charging..." : "Test US$59.99 Charge"}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -783,8 +806,8 @@ export function AdobeDemoPortal({
             {/* SubSlayer 1-Click Waiver Banner */}
             <div
               style={{
-                background: "#f7f1f8",
-                border: "1.5px dashed #704b73",
+                background: "#f7f1fa",
+                border: "1.5px dashed var(--accent, #72556e)",
                 borderRadius: "8px",
                 padding: "12px 16px",
                 marginBottom: "20px",
@@ -795,24 +818,27 @@ export function AdobeDemoPortal({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px" }}>
-                <Sparkles size={16} color="#704b73" />
-                <span style={{ color: "#3e2444" }}>
+                <Sparkles size={16} color="var(--accent, #72556e)" />
+                <span style={{ color: "var(--color-ink, #302b32)" }}>
                   <strong>Skip this dark pattern:</strong> SubSlayer AI waives the $119.98 fee.
                 </span>
               </div>
               <button
                 onClick={handleRunAIAgent}
                 style={{
-                  background: "#704b73",
-                  color: "#fff",
+                  background: "var(--accent, #72556e)",
+                  color: "#ffffff",
                   border: "none",
-                  padding: "6px 14px",
-                  borderRadius: "16px",
+                  padding: "7px 14px",
+                  borderRadius: "7px",
                   fontSize: "12px",
-                  fontWeight: 700,
+                  fontWeight: 650,
                   cursor: "pointer",
                   whiteSpace: "nowrap",
+                  transition: "background 0.15s",
                 }}
+                onMouseOver={(e) => (e.currentTarget.style.background = "var(--accent-dark, #5b4058)")}
+                onMouseOut={(e) => (e.currentTarget.style.background = "var(--accent, #72556e)")}
               >
                 ⚡ Slay ($0 Fee)
               </button>

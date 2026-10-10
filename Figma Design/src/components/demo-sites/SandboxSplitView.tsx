@@ -19,6 +19,7 @@ import { SpotifyDemoPortal } from "./SpotifyDemoPortal"
 import { AdobeDemoPortal } from "./AdobeDemoPortal"
 import { toggleCardLockApi, startCancellationAgentApi } from "../../services/api"
 import { SpotifyLogo, AdobeLogo } from "../common/PlatformLogos"
+import { Brand } from "../common/Brand"
 
 export interface SandboxSplitViewProps {
   onNavigate: (page: Page) => void
@@ -68,7 +69,7 @@ export function SandboxSplitView({
     setLogEvents((prev) => [
       {
         id: `log_${Date.now()}_${Math.random()}`,
-        time: new Date().toLocaleTimeString(),
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
         msg,
         type,
       },
@@ -112,7 +113,7 @@ export function SandboxSplitView({
 
   // 1-Click Slay from SubSlayer panel
   async function handleSlaySubscription() {
-    if (!targetSub) return
+    if (!targetSub || targetSub.status === "Cancelled") return
     addLog(`Deploying SubSlayer AI agent for ${targetSub.name}...`, "agent")
 
     // Optimistic
@@ -134,59 +135,45 @@ export function SandboxSplitView({
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: "#0f0c11",
-        color: "#ffffff",
-        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+        background: "var(--color-paper, #f8f7f8)",
+        color: "var(--color-ink, #302b32)",
+        fontFamily: "var(--font-sans), 'DM Sans', -apple-system, sans-serif",
       }}
     >
       {/* Split View Header */}
       <header
         style={{
-          background: "#18141d",
-          borderBottom: "1px solid #2e2436",
-          padding: "12px 24px",
+          background: "#ffffff",
+          borderBottom: "1px solid var(--color-line, #e8e4e6)",
+          padding: "0 28px",
+          height: "64px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           flexWrap: "wrap",
           gap: "14px",
           zIndex: 50,
+          boxShadow: "0 1px 3px rgba(48, 43, 50, 0.03)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "8px",
-              background: "linear-gradient(135deg, #704b73 0%, #4a2d4e 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 800,
-              fontSize: "16px",
-            }}
-          >
-            S
-          </div>
-          <div>
-            <span style={{ fontSize: "15px", fontWeight: 750, color: "#fff" }}>
-              SubSlayer AI Sandbox
-            </span>
-            <span style={{ color: "#a592aa", fontSize: "12px", marginLeft: "8px" }}>
-              Side-by-Side Live Defense View
-            </span>
-          </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <Brand onClick={() => onNavigate("app")} />
+
+          <div style={{ width: "1px", height: "20px", background: "#e8e4e6" }} />
+
+          <span style={{ fontSize: "13px", color: "var(--color-muted, #817a83)", fontWeight: 550 }}>
+            Side-by-Side Sandbox
+          </span>
         </div>
 
-        {/* Center: Provider Switcher Tabs */}
+        {/* Center: Provider Switcher Tabs (SubSlayer Styled) */}
         <div
           style={{
             display: "flex",
-            background: "#241c2b",
-            padding: "4px",
-            borderRadius: "24px",
-            border: "1px solid #3d2f47",
+            background: "#f0ebf2",
+            padding: "3px",
+            borderRadius: "8px",
+            border: "1px solid #e8e0e9",
             gap: "4px",
           }}
         >
@@ -199,18 +186,18 @@ export function SandboxSplitView({
               display: "flex",
               alignItems: "center",
               gap: "7px",
-              padding: "7px 16px",
-              borderRadius: "20px",
+              padding: "6px 14px",
+              borderRadius: "6px",
               border: "none",
               fontSize: "12.5px",
-              fontWeight: 700,
+              fontWeight: 600,
               cursor: "pointer",
-              background: activeProvider === "spotify" ? "#1ed760" : "transparent",
-              color: activeProvider === "spotify" ? "#000000" : "#d1c7d6",
+              background: activeProvider === "spotify" ? "var(--accent, #72556e)" : "transparent",
+              color: activeProvider === "spotify" ? "#ffffff" : "var(--color-muted, #817a83)",
               transition: "all 0.15s",
             }}
           >
-            <SpotifyLogo size={16} /> Spotify Demo ($10.99)
+            <SpotifyLogo size={15} /> Spotify Demo ($10.99)
           </button>
 
           <button
@@ -222,18 +209,18 @@ export function SandboxSplitView({
               display: "flex",
               alignItems: "center",
               gap: "7px",
-              padding: "7px 16px",
-              borderRadius: "20px",
+              padding: "6px 14px",
+              borderRadius: "6px",
               border: "none",
               fontSize: "12.5px",
-              fontWeight: 700,
+              fontWeight: 600,
               cursor: "pointer",
-              background: activeProvider === "adobe" ? "#fa0f00" : "transparent",
-              color: activeProvider === "adobe" ? "#ffffff" : "#d1c7d6",
+              background: activeProvider === "adobe" ? "var(--accent, #72556e)" : "transparent",
+              color: activeProvider === "adobe" ? "#ffffff" : "var(--color-muted, #817a83)",
               transition: "all 0.15s",
             }}
           >
-            <AdobeLogo size={16} /> Adobe CC Demo ($59.99)
+            <AdobeLogo size={15} /> Adobe CC Demo ($59.99)
           </button>
         </div>
 
@@ -244,39 +231,41 @@ export function SandboxSplitView({
               onNavigate(activeProvider === "spotify" ? "demo-spotify" : "demo-adobe")
             }
             style={{
-              background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              color: "#fff",
-              padding: "6px 12px",
-              borderRadius: "6px",
+              background: "#ffffff",
+              border: "1px solid var(--color-line, #e8e4e6)",
+              color: "var(--color-ink, #302b32)",
+              padding: "7px 12px",
+              borderRadius: "7px",
               fontSize: "12px",
-              fontWeight: 600,
+              fontWeight: 550,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               gap: "5px",
             }}
           >
-            <Maximize2 size={13} /> Full Screen Portal
+            <Maximize2 size={13} /> Full Window View
           </button>
 
           <button
             onClick={() => onNavigate("app")}
             style={{
-              background: "#704b73",
+              background: "var(--accent, #72556e)",
               border: "none",
               color: "#fff",
-              padding: "6px 14px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 650,
+              padding: "7px 14px",
+              borderRadius: "7px",
+              fontSize: "12.5px",
+              fontWeight: 600,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               gap: "6px",
             }}
+            onMouseOver={(e) => (e.currentTarget.style.background = "var(--accent-dark, #5b4058)")}
+            onMouseOut={(e) => (e.currentTarget.style.background = "var(--accent, #72556e)")}
           >
-            <ArrowLeft size={14} /> Full Dashboard
+            <ArrowLeft size={13} /> Back to Dashboard
           </button>
         </div>
       </header>
@@ -285,7 +274,7 @@ export function SandboxSplitView({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "420px 1fr",
           flex: 1,
           overflow: "hidden",
         }}
@@ -293,116 +282,54 @@ export function SandboxSplitView({
         {/* Left Pane: SubSlayer AI Active Defense Panel */}
         <div
           style={{
-            background: "#141019",
-            borderRight: "1px solid #2e2436",
-            padding: "28px",
+            background: "#ffffff",
+            borderRight: "1px solid var(--color-line, #e8e4e6)",
+            padding: "24px",
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            gap: "24px",
+            gap: "20px",
           }}
         >
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
               <span
                 style={{
-                  background: "#704b73",
-                  color: "#fff",
-                  fontSize: "10.5px",
-                  fontWeight: 800,
-                  padding: "2px 7px",
-                  borderRadius: "4px",
+                  background: "#f7f1fa",
+                  border: "1px solid #e6daed",
+                  color: "var(--accent, #72556e)",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  padding: "2px 8px",
+                  borderRadius: "20px",
                 }}
               >
-                PANE 1 • LEFT
+                SUBSLAYER DEFENSE HUB
               </span>
-              <h2 style={{ fontSize: "20px", fontWeight: 800, margin: 0 }}>
-                SubSlayer AI Control Hub
-              </h2>
             </div>
-            <p style={{ color: "#a592aa", fontSize: "13px", margin: 0 }}>
-              Control virtual card shields and deploy autonomous agents in real time while observing provider behavior on the right.
+            <h2
+              style={{
+                fontSize: "19px",
+                fontWeight: 750,
+                margin: "0 0 4px 0",
+                color: "var(--color-ink, #302b32)",
+                fontFamily: "var(--font-display), 'Manrope', sans-serif",
+              }}
+            >
+              Real-Time Control Center
+            </h2>
+            <p style={{ color: "var(--color-muted, #817a83)", fontSize: "13px", margin: 0, lineHeight: 1.5 }}>
+              Toggle virtual card shields and deploy autonomous cancellation agents while viewing the provider site on the right.
             </p>
           </div>
 
           {/* Virtual Card Shield Card */}
           <div
             style={{
-              background: "#1c1724",
-              borderRadius: "12px",
-              border: `1.5px solid ${isLocked ? "#b91c1c" : "#22c55e"}`,
-              padding: "20px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "14px",
-              }}
-            >
-              <span style={{ fontSize: "12px", fontWeight: 750, color: "#d1c7d6" }}>
-                VIRTUAL CARD SHIELD STATUS
-              </span>
-              <span
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  padding: "3px 9px",
-                  borderRadius: "12px",
-                  background: isLocked ? "rgba(239, 68, 68, 0.2)" : "rgba(34, 197, 94, 0.2)",
-                  color: isLocked ? "#fca5a5" : "#86efac",
-                }}
-              >
-                {isLocked ? "🛡️ LOCKED ($0.00 LIMIT)" : "🟢 UNLOCKED (ACTIVE)"}
-              </span>
-            </div>
-
-            <div style={{ fontSize: "17px", fontWeight: 700, fontFamily: "monospace", letterSpacing: "2px" }}>
-              •••• •••• •••• {targetCard?.last4 || "4242"}
-            </div>
-            <div style={{ fontSize: "12px", color: "#a592aa", margin: "4px 0 16px 0" }}>
-              Linked Merchant: {activeProvider.toUpperCase()} DEMO • Spending Limit: ${targetCard?.spendingLimit || 20}.00
-            </div>
-
-            <button
-              onClick={handleToggleShield}
-              style={{
-                width: "100%",
-                background: isLocked ? "#1e293b" : "#450a0a",
-                color: isLocked ? "#93c5fd" : "#fca5a5",
-                border: `1px solid ${isLocked ? "#3b82f6" : "#ef4444"}`,
-                padding: "11px 16px",
-                borderRadius: "8px",
-                fontSize: "13px",
-                fontWeight: 750,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-              }}
-            >
-              {isLocked ? (
-                <>
-                  <Unlock size={15} /> Unlock Shield (Allow Provider Renewal)
-                </>
-              ) : (
-                <>
-                  <Lock size={15} /> Lock Shield to $0.00 (Block Provider Charges)
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Autonomous Cancellation Trigger Card */}
-          <div
-            style={{
-              background: "#1c1724",
-              borderRadius: "12px",
-              border: "1px solid #2e2436",
-              padding: "20px",
+              background: "#faf9f6",
+              borderRadius: "10px",
+              border: `1px solid ${isLocked ? "#fecaca" : "#e8e4e6"}`,
+              padding: "18px",
             }}
           >
             <div
@@ -413,39 +340,107 @@ export function SandboxSplitView({
                 marginBottom: "12px",
               }}
             >
-              <span style={{ fontSize: "12px", fontWeight: 750, color: "#d1c7d6" }}>
-                ACTIVE TARGET SUBSCRIPTION
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-muted, #817a83)", letterSpacing: "0.5px" }}>
+                VIRTUAL CARD SHIELD
               </span>
               <span
                 style={{
                   fontSize: "11px",
-                  fontWeight: 800,
-                  padding: "3px 9px",
+                  fontWeight: 700,
+                  padding: "2px 8px",
                   borderRadius: "12px",
-                  background: targetSub?.status === "Cancelled" ? "rgba(239, 68, 68, 0.2)" : "rgba(34, 197, 94, 0.2)",
-                  color: targetSub?.status === "Cancelled" ? "#fca5a5" : "#86efac",
+                  background: isLocked ? "#fef2f2" : "#f7f1fa",
+                  color: isLocked ? "#b91c1c" : "var(--accent, #72556e)",
+                  border: `1px solid ${isLocked ? "#fecaca" : "#e6daed"}`,
                 }}
               >
-                {targetSub?.status === "Cancelled" ? "SLAYED" : "ACTIVE"}
+                {isLocked ? "🔒 LOCKED ($0.00 LIMIT)" : "🔓 ACTIVE"}
               </span>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-              {activeProvider === "spotify" ? <SpotifyLogo size={24} /> : <AdobeLogo size={24} />}
+            <div style={{ fontSize: "16px", fontWeight: 700, fontFamily: "monospace", letterSpacing: "1.5px", color: "var(--color-ink, #302b32)" }}>
+              •••• •••• •••• {targetCard?.last4 || "4242"}
+            </div>
+            <div style={{ fontSize: "12px", color: "var(--color-muted, #817a83)", margin: "4px 0 14px 0" }}>
+              Linked Merchant: {activeProvider.toUpperCase()} DEMO • Limit: ${targetCard?.spendingLimit || 20}.00
+            </div>
+
+            <button
+              onClick={handleToggleShield}
+              style={{
+                width: "100%",
+                background: isLocked ? "#ffffff" : "#fef2f2",
+                color: isLocked ? "var(--color-ink, #302b32)" : "#b91c1c",
+                border: `1px solid ${isLocked ? "#e8e4e6" : "#fecaca"}`,
+                padding: "9px 14px",
+                borderRadius: "7px",
+                fontSize: "12.5px",
+                fontWeight: 650,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+              }}
+            >
+              {isLocked ? (
+                <>
+                  <Unlock size={14} /> Unlock Shield (Allow Charges)
+                </>
+              ) : (
+                <>
+                  <Lock size={14} /> Lock Shield to $0.00 (Block Charges)
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Autonomous Cancellation Trigger Card */}
+          <div
+            style={{
+              background: "#faf9f6",
+              borderRadius: "10px",
+              border: "1px solid var(--color-line, #e8e4e6)",
+              padding: "18px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
+            >
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-muted, #817a83)", letterSpacing: "0.5px" }}>
+                TARGET SUBSCRIPTION
+              </span>
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  padding: "2px 8px",
+                  borderRadius: "12px",
+                  background: targetSub?.status === "Cancelled" ? "#fef2f2" : "#f0fdf4",
+                  color: targetSub?.status === "Cancelled" ? "#b91c1c" : "#166534",
+                  border: `1px solid ${targetSub?.status === "Cancelled" ? "#fecaca" : "#bbf7d0"}`,
+                }}
+              >
+                {targetSub?.status === "Cancelled" ? "CANCELLED" : "ACTIVE"}
+              </span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+              {activeProvider === "spotify" ? <SpotifyLogo size={22} /> : <AdobeLogo size={22} />}
               <div>
-                <strong style={{ fontSize: "15px", display: "block" }}>
+                <strong style={{ fontSize: "14.5px", display: "block", color: "var(--color-ink, #302b32)" }}>
                   {targetSub?.name || (activeProvider === "spotify" ? "Spotify" : "Adobe CC")}
                 </strong>
-                <span style={{ fontSize: "12px", color: "#a592aa" }}>
-                  ${targetSub?.price || (activeProvider === "spotify" ? 10.99 : 59.99)}/mo • Vampire Risk:{" "}
-                  {targetSub?.vampireScore || (activeProvider === "spotify" ? 55 : 88)}/100
+                <span style={{ fontSize: "12px", color: "var(--color-muted, #817a83)" }}>
+                  ${targetSub?.price || (activeProvider === "spotify" ? 10.99 : 59.99)}/mo
                 </span>
               </div>
             </div>
-
-            <p style={{ fontSize: "12.5px", color: "#a592aa", margin: "0 0 16px 0", lineHeight: 1.5 }}>
-              Clicking below will dispatch the autonomous agent to cancel via the provider API and automatically waive any termination penalties.
-            </p>
 
             <button
               onClick={handleSlaySubscription}
@@ -454,39 +449,49 @@ export function SandboxSplitView({
                 width: "100%",
                 background:
                   targetSub?.status === "Cancelled"
-                    ? "#282030"
-                    : "linear-gradient(135deg, #704b73 0%, #4a2d4e 100%)",
-                color: targetSub?.status === "Cancelled" ? "#777" : "#fff",
+                    ? "#e8e4e6"
+                    : "var(--accent, #72556e)",
+                color: targetSub?.status === "Cancelled" ? "#817a83" : "#ffffff",
                 border: "none",
-                padding: "11px 16px",
-                borderRadius: "8px",
+                padding: "10px 14px",
+                borderRadius: "7px",
                 fontSize: "13px",
-                fontWeight: 750,
+                fontWeight: 650,
                 cursor: targetSub?.status === "Cancelled" ? "default" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "8px",
+                gap: "6px",
+              }}
+              onMouseOver={(e) => {
+                if (targetSub?.status !== "Cancelled") {
+                  e.currentTarget.style.background = "var(--accent-dark, #5b4058)"
+                }
+              }}
+              onMouseOut={(e) => {
+                if (targetSub?.status !== "Cancelled") {
+                  e.currentTarget.style.background = "var(--accent, #72556e)"
+                }
               }}
             >
-              <Sparkles size={15} />
+              <Sparkles size={14} />
               {targetSub?.status === "Cancelled"
                 ? "Subscription Already Slayed"
-                : `1-Click Auto-Cancel ${targetSub?.name || "Service"}`}
+                : `⚡ Auto-Cancel ${targetSub?.name || "Service"}`}
             </button>
           </div>
 
           {/* Real-Time Sandbox Activity Log */}
           <div
             style={{
-              background: "#1c1724",
-              borderRadius: "12px",
-              border: "1px solid #2e2436",
-              padding: "18px",
+              background: "#faf9f6",
+              borderRadius: "10px",
+              border: "1px solid var(--color-line, #e8e4e6)",
+              padding: "16px",
               flex: 1,
             }}
           >
-            <span style={{ fontSize: "12px", fontWeight: 750, color: "#a592aa", display: "block", marginBottom: "10px" }}>
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-muted, #817a83)", display: "block", marginBottom: "10px", letterSpacing: "0.5px" }}>
               REAL-TIME EVENT STREAM
             </span>
 
@@ -495,20 +500,23 @@ export function SandboxSplitView({
                 <div
                   key={e.id}
                   style={{
-                    background: "#141019",
+                    background: "#ffffff",
                     padding: "8px 12px",
                     borderRadius: "6px",
                     fontSize: "12px",
+                    border: "1px solid #e8e4e6",
                     borderLeft: `3px solid ${
-                      e.type === "shield" ? "#3b82f6" : e.type === "agent" ? "#704b73" : "#22c55e"
+                      e.type === "shield" ? "#3b82f6" : e.type === "agent" ? "#72556e" : "#10b981"
                     }`,
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", color: "#888", fontSize: "11px" }}>
-                    <span>{e.type.toUpperCase()}</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: "#817a83", fontSize: "10.5px" }}>
+                    <span style={{ fontWeight: 650 }}>{e.type.toUpperCase()}</span>
                     <span>{e.time}</span>
                   </div>
-                  <span style={{ color: "#e0d9e4", display: "block", marginTop: "2px" }}>{e.msg}</span>
+                  <span style={{ color: "var(--color-ink, #302b32)", display: "block", marginTop: "2px" }}>
+                    {e.msg}
+                  </span>
                 </div>
               ))}
             </div>
@@ -527,8 +535,8 @@ export function SandboxSplitView({
           {/* Mini Browser Bar */}
           <div
             style={{
-              background: "#1e1824",
-              borderBottom: "1px solid #2e2436",
+              background: "#fcfbfa",
+              borderBottom: "1px solid var(--color-line, #e8e4e6)",
               padding: "8px 16px",
               display: "flex",
               alignItems: "center",
@@ -545,18 +553,19 @@ export function SandboxSplitView({
             <div
               style={{
                 flex: 1,
-                background: "#120e17",
-                border: "1px solid #33283b",
-                borderRadius: "16px",
+                background: "#f3eff5",
+                border: "1px solid #e8e0e9",
+                borderRadius: "6px",
                 padding: "4px 12px",
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
                 fontSize: "11.5px",
-                color: "#d1c7d6",
+                color: "#302b32",
+                fontWeight: 550,
               }}
             >
-              <Lock size={11} color="#10b981" />
+              <Lock size={11} color="var(--accent, #72556e)" />
               <span>
                 {activeProvider === "spotify"
                   ? "https://accounts.spotify.com/en/account/overview"

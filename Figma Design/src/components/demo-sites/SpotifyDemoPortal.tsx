@@ -369,8 +369,8 @@ export function SpotifyDemoPortal({
         {subStatus === "Cancelled" && (
           <div
             style={{
-              background: "linear-gradient(135deg, rgba(30, 215, 96, 0.15) 0%, rgba(112, 75, 115, 0.25) 100%)",
-              border: "1.5px solid #1ed760",
+              background: "#1a161f",
+              border: "1px solid var(--accent, #72556e)",
               borderRadius: "10px",
               padding: "16px 20px",
               marginBottom: "28px",
@@ -386,8 +386,8 @@ export function SpotifyDemoPortal({
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  background: "#1ed760",
-                  color: "#000",
+                  background: "var(--accent, #72556e)",
+                  color: "#ffffff",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -397,7 +397,7 @@ export function SpotifyDemoPortal({
                 <Sparkles size={18} />
               </div>
               <div>
-                <strong style={{ fontSize: "15px", color: "#fff", display: "block" }}>
+                <strong style={{ fontSize: "15px", color: "#ffffff", display: "block" }}>
                   Subscription Slayed by SubSlayer AI
                 </strong>
                 <span style={{ fontSize: "13px", color: "#d1c7d6" }}>
@@ -408,13 +408,14 @@ export function SpotifyDemoPortal({
 
             <span
               style={{
-                background: "#1ed760",
-                color: "#000000",
-                fontWeight: 800,
+                background: "#f7f1fa",
+                color: "var(--accent, #72556e)",
+                fontWeight: 700,
                 fontSize: "11px",
                 padding: "4px 12px",
                 borderRadius: "20px",
                 whiteSpace: "nowrap",
+                border: "1px solid #e6daed",
               }}
             >
               FREE TIER PENDING
@@ -533,13 +534,40 @@ export function SpotifyDemoPortal({
                 </strong>
               </div>
 
-              <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: "12px", color: "#a7a7a7", display: "block" }}>
-                  Monthly billing
-                </span>
-                <strong style={{ fontSize: "18px", color: "#ffffff" }}>
-                  $10.99 / mo
-                </strong>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontSize: "12px", color: "#a7a7a7", display: "block" }}>
+                    Monthly billing
+                  </span>
+                  <strong style={{ fontSize: "17px", color: "#ffffff" }}>
+                    $10.99 / mo
+                  </strong>
+                </div>
+
+                <button
+                  onClick={handleSimulateRenewal}
+                  disabled={charging}
+                  style={{
+                    background: "#282828",
+                    border: "1px solid #444444",
+                    color: "#ffffff",
+                    borderRadius: "500px",
+                    padding: "7px 14px",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    cursor: charging ? "wait" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = "#333333")}
+                  onMouseOut={(e) => (e.currentTarget.style.background = "#282828")}
+                  title="Simulate monthly Spotify renewal charge"
+                >
+                  {charging ? <RefreshCw size={12} className="animate-spin" /> : <Flame size={12} color="#f59e0b" />}
+                  {charging ? "Charging..." : "Test $10.99 Charge"}
+                </button>
               </div>
             </div>
 
